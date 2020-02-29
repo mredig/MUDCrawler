@@ -9,6 +9,15 @@
           "revision": "22fe84797d499ffca911ccd896b34efaf06a50b9",
           "version": "4.1.1"
         }
+      },
+      {
+        "package": "NetworkHandler",
+        "repositoryURL": "https://github.com/mredig/NetworkHandler.git",
+        "state": {
+          "branch": null,
+          "revision": "0ea9733ed52f99056d7037285a285980ddeae66a",
+          "version": "0.9.7"
+        }
       }
     ]
   },

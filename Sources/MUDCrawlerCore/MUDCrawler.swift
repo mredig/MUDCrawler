@@ -1,5 +1,5 @@
 import Foundation
-import NetworkHandlerSPM
+import NetworkHandler
 
 public struct MUDCrawler {
 
