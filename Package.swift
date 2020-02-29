@@ -14,7 +14,7 @@ let package = Package(
 	dependencies: [
 		// Dependencies declare other packages that this package depends on.
 		// .package(url: /* package url */, from: "1.0.0"),
-//		.package(path: "../NetworkHandlerSPM/"),
+		.package(path: "../NetworkHandlerSPM/"),
 		.package(url: "https://github.com/johnsundell/files.git", from: "4.0.0")
 	],
 	targets: [
@@ -23,7 +23,7 @@ let package = Package(
 		.target(name: "MUDCrawlerCore",
 				dependencies: [
 					"Files",
-//					"NetworkHandlerSPM"
+					"NetworkHandlerSPM"
 		]),
 		.target(
 			name: "MUDCrawler",
