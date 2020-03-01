@@ -7,11 +7,24 @@
 
 import Foundation
 
-enum Direction: String, Codable {
+enum Direction: String, Codable, Hashable {
 	case north = "n"
 	case south = "s"
 	case east = "e"
 	case west = "w"
+
+	var opposite: Direction {
+		switch self {
+		case .north:
+			return .south
+		case .south:
+			return .north
+		case .west:
+			return .east
+		case .east:
+			return .west
+		}
+	}
 }
 
 struct DirectionWrapper: Codable {
