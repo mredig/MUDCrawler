@@ -20,28 +20,40 @@ public class MUDCrawler {
 		}
 	}
 
-
-	let directions = Set("nswe".map { String($0) })
 	public func gameLoop() {
 		waitForResponse()
-		print("\nWhat would you like to do?: ", terminator: "")
-		guard let userInput = readLine(strippingNewline: true) else { return }
-		let userCmd = userInput.lowercased()
 
-		waitForCooldown()
-
-		print("doing \(userCmd)")
-		thing()
-		gameLoop()
+		let command = promptPlayerInput()
+		performCommand(command)
 	}
 
-	public func thing() {
+	let directions = Set("nswe".map { String($0) })
+	func performCommand(_ command: String) {
+		waitForCooldown()
+
+		if command == "init" {
+			initializePlayer()
+		} else if directions.contains(command) {
+			move(inDirection: command)
+		} else {
+			print("\(command) is an invalid command. Try again.")
+		}
+	}
+
+	func promptPlayerInput() -> String {
+		print("\nWhat would you like to do?: ", terminator: "")
+		guard let userInput = readLine(strippingNewline: true) else { return "" }
+		return userInput.lowercased()
+	}
+
+	// MARK: - API calls
+	func initializePlayer() {
 		waitingForResponse = true
 		apiConnection.initPlayer { result in
 			switch result {
 			case .success(let roomInfo):
 				print(roomInfo)
-				self.cooldownExpiration = Date(timeIntervalSinceNow: roomInfo.cooldown)
+				self.updateCooldown(roomInfo.cooldown)
 			case .failure(let error):
 				print("there was an error: \(error)")
 			}
@@ -49,6 +61,23 @@ public class MUDCrawler {
 		}
 	}
 
+	func move(inDirection direction: String) {
+		guard let direction = Direction(rawValue: direction) else { return }
+		waitingForResponse = true
+
+		apiConnection.movePlayer(direction: direction) { (result: Result<RoomResponse, NetworkError>) in
+			switch result {
+			case .success(let roomInfo):
+				print(roomInfo)
+				self.updateCooldown(roomInfo.cooldown)
+			case .failure(let error):
+				print("Error moving rooms: \(error)")
+			}
+			self.waitingForResponse = false
+		}
+	}
+
+	// MARK: - Wait functions
 	func waitForCooldown() {
 		var printedNotice = false
 		while Date().timeIntervalSince1970 < cooldownExpiration.timeIntervalSince1970 {
@@ -69,5 +98,9 @@ public class MUDCrawler {
 			}
 			usleep(10000)
 		}
+	}
+
+	func updateCooldown(_ cooldown: TimeInterval) {
+		cooldownExpiration = Date(timeIntervalSinceNow: cooldown)
 	}
 }
