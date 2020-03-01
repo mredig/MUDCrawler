@@ -24,7 +24,7 @@ class ApiConnection {
 		return request.allHeaderFields
 	}
 
-	func initPlayer() {
+	func initPlayer(completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("init", isDirectory: true)
@@ -32,14 +32,6 @@ class ApiConnection {
 		var request = url.request
 		request.allHeaderFields = requestHeaders
 
-		NetworkHandler.default.transferMahDatas(with: request) { result in
-			switch result {
-			case .success(let data):
-				let str = String(data: data, encoding: .utf8)!
-				print(str)
-			case .failure(let error):
-				print("there was an error: \(error)")
-			}
-		}
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 }
