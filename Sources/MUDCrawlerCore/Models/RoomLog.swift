@@ -23,12 +23,4 @@ class RoomLog: Codable, Equatable {
 		self.location = location
 		connections = [Direction: Int]()
 	}
-
-	func connect(room: RoomLog, in direction: Direction) {
-		guard connections[direction] != room.id else { return }
-		guard connections[direction] == nil else { fatalError("Room \(self.id) already connected to another room! \(connections[direction] as Any)") }
-
-		connections[direction] = room.id
-		room.connect(room: self, in: direction.opposite)
-	}
 }
