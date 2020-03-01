@@ -29,4 +29,5 @@ enum Direction: String, Codable, Hashable {
 
 struct DirectionWrapper: Codable {
 	let direction: Direction
+	let nextRoomID: String?
 }

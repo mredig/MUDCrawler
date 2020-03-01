@@ -38,9 +38,17 @@ class RoomController {
 	}
 
 	func move(in direction: Direction, completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
+		guard let currentRoom = currentRoom else { return }
 		prepareToSendCommand()
 
-		apiConnection.movePlayer(direction: direction) { result in
+		let nextRoomID: String?
+		if let nextID = rooms[currentRoom]?.connections[direction] {
+			nextRoomID = "\(nextID)"
+		} else {
+			nextRoomID = nil
+		}
+
+		apiConnection.movePlayer(direction: direction, predictedRoom: nextRoomID) { result in
 			switch result {
 			case .success(let roomInfo):
 				print(roomInfo)

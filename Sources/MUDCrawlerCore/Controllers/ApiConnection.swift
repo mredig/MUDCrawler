@@ -22,6 +22,10 @@ class ApiConnection {
 		request.httpMethod = method
 		request.addValue(.contentType(type: .json), forHTTPHeaderField: .commonKey(key: .contentType))
 		request.addValue(.other(value: "Token \(token)"), forHTTPHeaderField: .commonKey(key: .authorization))
+
+		let encoder = JSONEncoder()
+		encoder.keyEncodingStrategy = .convertToSnakeCase
+		request.encoder = encoder
 		return request
 	}
 
@@ -35,13 +39,13 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
-	func movePlayer(direction: Direction, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
+	func movePlayer(direction: Direction, predictedRoom: String?, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("move", isDirectory: true)
 
 		var request = getRequest(from: url, method: .post)
-		request.encodeData(DirectionWrapper(direction: direction))
+		request.encodeData(DirectionWrapper(direction: direction, nextRoomID: predictedRoom))
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 }
