@@ -12,8 +12,6 @@ public struct MUDCrawler {
 	}
 
 	public func thing() {
-		print("Hello thing: \(value)")
-
 		apiConnection.initPlayer { result in
 			switch result {
 			case .success(let roomInfo):
