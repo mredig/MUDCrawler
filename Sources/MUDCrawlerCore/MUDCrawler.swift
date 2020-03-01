@@ -12,23 +12,10 @@ public struct MUDCrawler {
 	public func thing() {
 		print("Hello thing: \(value)")
 
-		let handler = NetworkHandler.default
+		let apiconnection = ApiConnection(token: "a010c017b8562e13b8f933b546a71caccca1c990")
 
-		let baseURL = URL(string: "http://imac.nl.redig.me:8080/overworld")!
+		apiconnection.initPlayer()
 
-		var request = baseURL.request
-		request.addValue(.contentType(type: .json), forHTTPHeaderField: .commonKey(key: .contentType))
-
-
-		handler.transferMahDatas(with: request) { result in
-			switch result {
-			case .success(let data):
-				let str = String(data: data, encoding: .utf8)!
-				print(str)
-			case .failure(let error):
-				print("Error: \(error)")
-			}
-		}
 		let waitForUser = readLine(strippingNewline: true)
 		print(waitForUser)
 	}
