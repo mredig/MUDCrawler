@@ -7,13 +7,110 @@
 
 import Foundation
 import Files
+import NetworkHandler
 
 class RoomController {
 
 	private(set) var rooms = [Int: RoomLog]()
+	private(set) var currentRoom: Int?
+	private let apiConnection = ApiConnection(token: "a010c017b8562e13b8f933b546a71caccca1c990")
+	private(set) var waitingForResponse = false
+	private(set) var cooldownExpiration = Date()
 
 	init() {
 		simpleLoadFromPersistentStore()
+	}
+
+	func initPlayer(completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
+		waitForCooldown()
+		waitingForResponse = true
+		apiConnection.initPlayer { result in
+			switch result {
+			case .success(let roomInfo):
+				self.updateCooldown(roomInfo.cooldown)
+				self.logRoomInfo(roomInfo, movedInDirection: nil)
+				print(roomInfo)
+			case .failure(let error):
+				print("there was an error: \(error)")
+			}
+			self.waitingForResponse = false
+			completion?(result)
+		}
+	}
+
+	func move(in direction: Direction, completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
+		waitForCooldown()
+
+	}
+
+	private func logRoomInfo(_ roomInfo: RoomResponse, movedInDirection direction: Direction?) {
+		let previousRoomID = currentRoom
+		currentRoom = roomInfo.roomID
+
+		guard rooms[roomInfo.roomID] == nil else { return }
+		let room = RoomLog(id: roomInfo.roomID, location: roomInfo.coordinates)
+		rooms[roomInfo.roomID] = room
+
+		if let previousRoomID = previousRoomID, let direction = direction {
+			guard let previousRoom = rooms[previousRoomID] else { fatalError("Previous room: \(previousRoomID) not logged!") }
+			connect(previousRoom: previousRoom, newRoom: room, direction: direction)
+		}
+		simpleSaveToPersistentStore()
+	}
+
+	private func connect(previousRoom: RoomLog, newRoom: RoomLog, direction: Direction) {
+		// double check direction and positions match (this might not be necessary, but just verifying)
+		switch direction {
+		case .north:
+			precondition(previousRoom.location.x == newRoom.location.x)
+			precondition(previousRoom.location.y + 1 == newRoom.location.y)
+		case .south:
+			precondition(previousRoom.location.x == newRoom.location.x)
+			precondition(previousRoom.location.y == newRoom.location.y + 1)
+		case .west:
+			precondition(previousRoom.location.x == newRoom.location.x + 1)
+			precondition(previousRoom.location.y == newRoom.location.y)
+		case .east:
+			precondition(previousRoom.location.x + 1 == newRoom.location.x)
+			precondition(previousRoom.location.y == newRoom.location.y)
+		}
+
+		connectOneWay(startingIn: previousRoom, endingIn: newRoom, direction: direction)
+		connectOneWay(startingIn: newRoom, endingIn: previousRoom, direction: direction.opposite)
+	}
+
+	private func connectOneWay(startingIn previousRoom: RoomLog, endingIn newRoom: RoomLog, direction: Direction) {
+		if previousRoom.connections[direction] != nil && previousRoom.connections[direction] != newRoom.id {
+			fatalError("Room \(previousRoom.id) is already connected to \(previousRoom.connections[direction] ?? -1) in that direction! \(direction). Attempted to connect to \(newRoom.id)")
+		}
+		previousRoom.connections[direction] = newRoom.id
+	}
+
+	// MARK: - Wait functions
+	func waitForCooldown() {
+		var printedNotice = false
+		while Date().timeIntervalSince1970 < cooldownExpiration.timeIntervalSince1970 {
+			if !printedNotice {
+				print("waiting for cooldown...")
+				printedNotice = true
+			}
+			usleep(10000)
+		}
+	}
+
+	func waitForResponse() {
+		var printedNotice = false
+		while waitingForResponse {
+			if !printedNotice {
+				print("waiting for response...")
+				printedNotice = true
+			}
+			usleep(10000)
+		}
+	}
+
+	func updateCooldown(_ cooldown: TimeInterval) {
+		cooldownExpiration = Date(timeIntervalSinceNow: cooldown)
 	}
 
 	// MARK: - Persistence
