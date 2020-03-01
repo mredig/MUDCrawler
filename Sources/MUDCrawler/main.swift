@@ -10,4 +10,4 @@ import MUDCrawlerCore
 
 let test = MUDCrawler(value: 5)
 
-test.thing()
+test.start()
