@@ -3,7 +3,6 @@ import NetworkHandler
 
 public class MUDCrawler {
 
-//	let apiConnection = ApiConnection(token: "a010c017b8562e13b8f933b546a71caccca1c990")
 	let roomController = RoomController()
 
 	var waitingForResponse = false
@@ -42,36 +41,4 @@ public class MUDCrawler {
 		guard let userInput = readLine(strippingNewline: true) else { return "" }
 		return userInput.lowercased()
 	}
-
-	// MARK: - API calls
-//	func initializePlayer() {
-//		waitingForResponse = true
-//		apiConnection.initPlayer { result in
-//			switch result {
-//			case .success(let roomInfo):
-//				print(roomInfo)
-//				self.updateCooldown(roomInfo.cooldown)
-//			case .failure(let error):
-//				print("there was an error: \(error)")
-//			}
-//			self.waitingForResponse = false
-//		}
-//	}
-//
-//	func move(inDirection direction: String) {
-//		guard let direction = Direction(rawValue: direction) else { return }
-//		waitingForResponse = true
-//
-//		apiConnection.movePlayer(direction: direction) { (result: Result<RoomResponse, NetworkError>) in
-//			switch result {
-//			case .success(let roomInfo):
-//				print(roomInfo)
-//				self.updateCooldown(roomInfo.cooldown)
-//			case .failure(let error):
-//				print("Error moving rooms: \(error)")
-//			}
-//			self.waitingForResponse = false
-//		}
-//	}
-
 }

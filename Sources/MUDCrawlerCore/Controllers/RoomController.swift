@@ -22,8 +22,7 @@ class RoomController {
 	}
 
 	func initPlayer(completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
-		waitForCooldown()
-		waitingForResponse = true
+		prepareToSendCommand()
 		apiConnection.initPlayer { result in
 			switch result {
 			case .success(let roomInfo):
@@ -33,13 +32,26 @@ class RoomController {
 			case .failure(let error):
 				print("there was an error: \(error)")
 			}
-			self.waitingForResponse = false
+			self.commandCompleted()
 			completion?(result)
 		}
 	}
 
 	func move(in direction: Direction, completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
-		waitForCooldown()
+		prepareToSendCommand()
+
+		apiConnection.movePlayer(direction: direction) { result in
+			switch result {
+			case .success(let roomInfo):
+				print(roomInfo)
+				self.updateCooldown(roomInfo.cooldown)
+				self.logRoomInfo(roomInfo, movedInDirection: direction)
+			case .failure(let error):
+				print("Error moving rooms: \(error)")
+			}
+			self.commandCompleted()
+			completion?(result)
+		}
 
 	}
 
@@ -87,6 +99,15 @@ class RoomController {
 	}
 
 	// MARK: - Wait functions
+	private func prepareToSendCommand() {
+		waitForCooldown()
+		waitingForResponse = true
+	}
+
+	private func commandCompleted() {
+		waitingForResponse = false
+	}
+
 	func waitForCooldown() {
 		var printedNotice = false
 		while Date().timeIntervalSince1970 < cooldownExpiration.timeIntervalSince1970 {
