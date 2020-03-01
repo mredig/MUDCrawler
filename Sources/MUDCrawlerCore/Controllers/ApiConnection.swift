@@ -17,8 +17,9 @@ class ApiConnection {
 		self.token = token
 	}
 
-	func getRequest(from url: URL) -> NetworkRequest {
+	func getRequest(from url: URL, method: HTTPMethod) -> NetworkRequest {
 		var request = url.request
+		request.httpMethod = method
 		request.addValue(.contentType(type: .json), forHTTPHeaderField: .commonKey(key: .contentType))
 		request.addValue(.other(value: "Token \(token)"), forHTTPHeaderField: .commonKey(key: .authorization))
 		return request
@@ -29,7 +30,7 @@ class ApiConnection {
 			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("init", isDirectory: true)
 
-		let request = getRequest(from: url)
+		let request = getRequest(from: url, method: .get)
 
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
@@ -39,7 +40,7 @@ class ApiConnection {
 			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("move", isDirectory: true)
 
-		var request = getRequest(from: url)
+		var request = getRequest(from: url, method: .post)
 		request.encodeData(DirectionWrapper(direction: direction))
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
