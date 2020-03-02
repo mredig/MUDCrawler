@@ -78,7 +78,7 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
-	func go(to roomID: Int) throws {
+	func go(to roomID: Int, quietly: Bool) throws {
 		guard let currentRoom = currentRoom else { return }
 		guard rooms[roomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: roomID) }
 
@@ -92,7 +92,11 @@ class RoomController {
 					let cdTime: Date
 					switch result {
 					case .success(let roomInfo):
-						print(roomInfo)
+						if quietly {
+							print("Entered room \(roomInfo.roomID)")
+						} else {
+							print(roomInfo)
+						}
 						self.logRoomInfo(roomInfo, movedInDirection: direction)
 						cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
 					case .failure(let error):
@@ -178,8 +182,12 @@ class RoomController {
 			let pathToNearestUnexplored = try nearestUnexplored(from: currentRoom)
 			if let lastElement = pathToNearestUnexplored.last {
 				print("Room \(lastElement.roomID) still has unexplored rooms. Headed there now!\n\n")
-				try go(to: lastElement.roomID)
+				try go(to: lastElement.roomID, quietly: true)
 				currentRoom = lastElement.roomID
+			}
+
+			if rooms.count.isMultiple(of: 5) {
+				drawMap()
 			}
 
 			guard let room = rooms[currentRoom] else { return }

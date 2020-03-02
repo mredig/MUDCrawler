@@ -52,7 +52,7 @@ public class MUDCrawler {
 			return
 		}
 		do {
-			try roomController.go(to: destID)
+			try roomController.go(to: destID, quietly: true)
 		} catch {
 			print("Error going to room: \(error)")
 		}
