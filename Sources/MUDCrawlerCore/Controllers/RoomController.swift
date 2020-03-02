@@ -41,7 +41,7 @@ class RoomController {
 					print(roomInfo)
 				case .failure(let error):
 					print("Error initing player: \(error)")
-					cdTime = Date()
+					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
 			}
@@ -70,7 +70,7 @@ class RoomController {
 					print(roomInfo)
 				case .failure(let error):
 					print("Error moving rooms: \(error)")
-					cdTime = Date()
+					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
 				completion?(result)
@@ -103,7 +103,7 @@ class RoomController {
 						cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
 					case .failure(let error):
 						print("Error moving player: \(error)")
-						cdTime = Date()
+						cdTime = self.cooldownFromError(error)
 					}
 					dateCompletion(cdTime)
 				}
@@ -125,7 +125,7 @@ class RoomController {
 					print(roomInfo)
 				case .failure(let error):
 					print("Error taking item: \(error)")
-					cdTime = Date()
+					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
 			}
@@ -145,7 +145,7 @@ class RoomController {
 					print(roomInfo)
 				case .failure(let error):
 					print("Error taking item: \(error)")
-					cdTime = Date()
+					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
 			}
@@ -165,7 +165,7 @@ class RoomController {
 					print(roomInfo)
 				case .failure(let error):
 					print("Error taking item: \(error)")
-					cdTime = Date()
+					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
 			}
@@ -184,7 +184,7 @@ class RoomController {
 					print(examineResponse)
 				case .failure(let error):
 					print("Error taking item: \(error)")
-					cdTime = Date()
+					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
 			}
@@ -203,7 +203,7 @@ class RoomController {
 					print(playerInfo)
 				case .failure(let error):
 					print("Error taking item: \(error)")
-					cdTime = Date()
+					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
 			}
@@ -457,6 +457,25 @@ class RoomController {
 
 	private func dateFromCooldownValue(_ cooldown: TimeInterval) -> Date {
 		Date(timeIntervalSinceNow: cooldown)
+	}
+
+	private func cooldownFromError(_ error: Error) -> Date {
+		guard let error = error as? NetworkError else { return Date() }
+
+		let returnedData: Data?
+		switch error {
+		case .badData(sourceData: let data):
+			returnedData = data
+		case .dataCodingError(specifically: _, sourceData: let data):
+			returnedData = data
+		case .httpNon200StatusCode(code: _, data: let data):
+			returnedData = data
+		default:
+			return Date()
+		}
+
+		guard let data = returnedData, let genericResponse = try? JSONDecoder().decode(BasicResponse.self, from: data) else { return Date() }
+		return dateFromCooldownValue(genericResponse.cooldown)
 	}
 
 	// MARK: - Persistence
