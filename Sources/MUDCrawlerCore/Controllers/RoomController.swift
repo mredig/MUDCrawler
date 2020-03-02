@@ -498,8 +498,14 @@ class RoomController {
 
 			guard let room = rooms[currentRoom] else { return }
 			guard let direction = room.unknownConnections.first else { continue }
-			move(in: direction) { _ in
-				print("Checked out a new room...\n\n")
+			if room.terrain == "CAVE" {
+				move(in: direction) { _ in
+					print("Checked out a new room...\n\n")
+				}
+			} else {
+				fly(in: direction) { _ in
+					print("Checked out a new room...\n\n")
+				}
 			}
 		}
 	}
