@@ -31,8 +31,14 @@ public class MUDCrawler {
 			roomController.move(in: direction)
 		} else if command == "test" {
 			roomController.testQueue()
-		} else if command.hasPrefix("go "){
+		} else if command.hasPrefix("go ") {
 			gotoRoom(command: command)
+		} else if command == "explore" {
+			do {
+				try roomController.explore()
+			} catch {
+				print("Error exploring: \(error)")
+			}
 		} else {
 			print("\(command) is an invalid command. Try again.")
 		}

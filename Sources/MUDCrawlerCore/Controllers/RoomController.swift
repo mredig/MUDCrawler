@@ -21,6 +21,8 @@ class RoomController {
 
 	let commandQueue = CommandQueue()
 
+	var stopExploring = false
+
 	init() {
 		simpleLoadFromPersistentStore()
 		commandQueue.start()
@@ -164,6 +166,27 @@ class RoomController {
 			}
 		}
 		throw RoomControllerError.pathNotFound
+	}
+
+	// double while loop over the path, first iterating each element, then the next loop looking forward until there's a different direction. condense somehow
+//	func compactForDash(path: []) -> [PathElement]
+
+	func explore() throws {
+		stopExploring = false
+		while !stopExploring {
+			guard var currentRoom = currentRoom else { return }
+			let pathToNearestUnexplored = try nearestUnexplored(from: currentRoom)
+			if let lastElement = pathToNearestUnexplored.last {
+				print("Room \(lastElement.roomID) still has unexplored rooms. Headed there now!\n\n")
+				try go(to: lastElement.roomID)
+				currentRoom = lastElement.roomID
+			}
+
+			guard let room = rooms[currentRoom] else { return }
+			guard let direction = room.unknownConnections.first else { continue }
+			print("Checking out a new room...\n\n")
+			move(in: direction)
+		}
 	}
 
 	func testQueue() {
