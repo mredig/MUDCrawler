@@ -18,8 +18,6 @@ public class MUDCrawler {
 	}
 
 	public func gameLoop() {
-		roomController.waitForResponse()
-
 		let command = promptPlayerInput()
 		performCommand(command)
 	}

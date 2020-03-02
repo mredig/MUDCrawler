@@ -14,8 +14,6 @@ class RoomController {
 	private(set) var rooms = [Int: RoomLog]()
 	private(set) var currentRoom: Int?
 	private let apiConnection = ApiConnection(token: "a010c017b8562e13b8f933b546a71caccca1c990")
-	private(set) var waitingForResponse = false
-	private(set) var cooldownExpiration = Date()
 
 	let commandQueue = CommandQueue()
 
@@ -24,6 +22,7 @@ class RoomController {
 		commandQueue.start()
 	}
 
+	/// adds an init command to the queue and waits for the cooldown to finish
 	func initPlayer(completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
 		commandQueue.addCommand { dateCompletion in
 			self.apiConnection.initPlayer { result in
@@ -43,6 +42,7 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	/// adds a move command to the queue and waits for the cooldown to finish
 	func move(in direction: Direction, completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
 		guard let currentRoom = currentRoom else { return }
 
@@ -132,42 +132,11 @@ class RoomController {
 	}
 
 	// MARK: - Wait functions
-	private func prepareToSendCommand() {
-		waitForCooldown()
-		waitingForResponse = true
-	}
-
-	private func commandCompleted() {
-		waitingForResponse = false
-	}
-
-	func waitForCooldown() {
-		var printedNotice = false
-		while Date().timeIntervalSince1970 < cooldownExpiration.timeIntervalSince1970 {
-			if !printedNotice {
-				print("waiting for cooldown...")
-				printedNotice = true
-			}
-			usleep(10000)
-		}
-	}
-
 	private func waitForCommandQueue() {
 		var printedNotice = false
 		while commandQueue.commandCount > 0 || commandQueue.currentlyExecuting {
 			if !printedNotice {
-				print("waiting for command queue...")
-				printedNotice = true
-			}
-			usleep(10000)
-		}
-	}
-
-	func waitForResponse() {
-		var printedNotice = false
-		while waitingForResponse {
-			if !printedNotice {
-				print("waiting for response...")
+				print("waiting for command queue to finish...")
 				printedNotice = true
 			}
 			usleep(10000)
@@ -176,10 +145,6 @@ class RoomController {
 
 	private func dateFromCooldownValue(_ cooldown: TimeInterval) -> Date {
 		Date(timeIntervalSinceNow: cooldown)
-	}
-
-	func updateCooldown(_ cooldown: TimeInterval) {
-		cooldownExpiration = dateFromCooldownValue(cooldown)
 	}
 
 	// MARK: - Persistence

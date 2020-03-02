@@ -12,8 +12,13 @@ class CommandQueue {
 	private(set) var currentlyExecuting = false
 
 	private let internalCommandQueue = DispatchQueue(label: "internal command queue")
-	private var _commands = Queue<(@escaping (Date) -> Void) -> Void>()
-	private(set) var commands: Queue<(@escaping (Date) -> Void) -> Void> {
+	/// Used to provide the timestamp that the most recent cooldown expires
+	typealias DateCompletionHandler = (Date) -> Void
+	/// Type used to do an arbitrary task, typically involving a cooldown. Will complete the task, requiring that the
+	/// `DateCompletionHandler` is called, passing in the next time a command may run.
+	typealias QueuedCommand = (@escaping DateCompletionHandler) -> Void
+	private var _commands = Queue<QueuedCommand>()
+	private(set) var commands: Queue<QueuedCommand> {
 		get { internalCommandQueue.sync { _commands } }
 		set { internalCommandQueue.sync { _commands = newValue } }
 	}
@@ -24,7 +29,9 @@ class CommandQueue {
 
 	private let opQueue = DispatchQueue(label: "This Command Queue!")
 
-	func addCommand(_ command: @escaping (@escaping (Date) -> Void) -> Void) {
+	/// adds an arbitrary command closure to the queue. They will be completed in the order they are added, waiting for
+	/// cooldowns to finish in between.
+	func addCommand(_ command: @escaping QueuedCommand) {
 		commands.enqueue(command)
 	}
 
@@ -42,7 +49,7 @@ class CommandQueue {
 		}
 	}
 
-	func updateCooldown(_ date: Date) {
+	private func updateCooldown(_ date: Date) {
 		earliestNextCommand = date
 		currentlyExecuting = false
 	}
