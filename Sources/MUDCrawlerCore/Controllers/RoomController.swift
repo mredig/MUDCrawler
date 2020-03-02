@@ -331,21 +331,22 @@ class RoomController {
 			RoomLocation(x: max($0.x, $1.value.location.x), y: max($0.y, $1.value.location.y))
 		}
 
-		let row = (0...size.x).map { _ in "     " }
+		let row = (0...size.x).map { _ in " " }
 		var matrix = (0...size.y).map { _ in row }
 
-		for (id, room) in rooms {
+		for (_, room) in rooms {
 			let location = room.location
-			var char = room.unknownConnections.isEmpty ? "\(id)" : "\(id)?"
+			var char = room.unknownConnections.isEmpty ? "X" : "?"
 			char = room.id == 0 ? "O" : char
-			char = room.id == 1 ? "S" : char
+			char = room.id == 55 ? "W" : char
+			char = room.terrain == "TRAP" ? "!" : char
 
-			while char.count < 5 {
-				char = " \(char) "
-			}
-			while char.count > 5 {
-				char.removeLast()
-			}
+//			while char.count < 5 {
+//				char = " \(char) "
+//			}
+//			while char.count > 5 {
+//				char.removeLast()
+//			}
 
 			matrix[location.y][location.x] = char
 		}
