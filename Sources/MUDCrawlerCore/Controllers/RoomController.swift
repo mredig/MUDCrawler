@@ -82,7 +82,9 @@ class RoomController {
 
 		let path = try shortestRoute(from: currentRoom, to: roomID)
 
-		for (direction, room) in path {
+		for step in path {
+			let direction = step.direction
+			let room = step.roomID
 			commandQueue.addCommand { dateCompletion in
 				self.apiConnection.movePlayer(direction: direction, predictedRoom: "\(room)") { result in
 					let cdTime: Date
@@ -104,21 +106,22 @@ class RoomController {
 	}
 
 	/// Performs a breadth first search to get from start to destination
-	func shortestRoute(from startRoomID: Int, to destinationRoomID: Int) throws -> [(direction: Direction, roomID: Int)] {
+	func shortestRoute(from startRoomID: Int, to destinationRoomID: Int) throws -> [PathElement<Direction>] {
 		guard rooms[startRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: startRoomID) }
 		guard rooms[destinationRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: destinationRoomID) }
 
-		let queue = Queue<[(direction: Direction?, roomID: Int)]>()
-		queue.enqueue([(nil, startRoomID)])
+		let queue = Queue<[PathElement<Direction?>]>()
+		queue.enqueue([PathElement(direction: nil, roomID: startRoomID)])
 		var visited = Set<Int>()
 
 		while queue.count > 0 {
 			guard let path = queue.dequeue() else { continue }
-			guard let (_, endRoomID) = path.last else { continue }
+			guard let lastPathElement = path.last else { continue }
+			let endRoomID = lastPathElement.roomID
 			if endRoomID == destinationRoomID {
 				return path.compactMap {
 					guard let direction = $0.direction else { return nil }
-					return (direction, $0.roomID)
+					return PathElement(direction: direction, roomID: $0.roomID)
 				}
 			}
 			guard !visited.contains(endRoomID) else { continue }
@@ -126,7 +129,7 @@ class RoomController {
 			guard let endRoom = rooms[endRoomID] else { continue }
 			for (direction, connectedRoomID) in endRoom.connections {
 				var newPath = path
-				newPath.append((direction, connectedRoomID))
+				newPath.append(PathElement(direction: direction, roomID: connectedRoomID))
 				queue.enqueue(newPath)
 			}
 		}
