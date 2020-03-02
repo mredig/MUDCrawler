@@ -386,7 +386,9 @@ class RoomController {
 		let (plistOut, jsonOut) = try getFilePaths()
 
 		let plistData = try PropertyListEncoder().encode(rooms)
-		let jsonData = try JSONEncoder().encode(rooms)
+		let jsonEnc = JSONEncoder()
+		jsonEnc.keyEncodingStrategy = .convertToSnakeCase
+		let jsonData = try jsonEnc.encode(rooms)
 
 		try plistOut.write(plistData)
 		try jsonOut.write(jsonData)
