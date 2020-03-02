@@ -9,7 +9,7 @@ import Foundation
 import NetworkHandler
 
 class ApiConnection {
-	private let baseURL = URL(string: "http://localhost:8000")!
+	private let baseURL = URL(string: "https://lambda-treasure-hunt.herokuapp.com")!
 
 	var token: String
 

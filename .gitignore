@@ -200,3 +200,5 @@ Dependencies/
 **/xcshareddata/WorkspaceSettings.xcsettings
 
 # End of https://www.gitignore.io/api/linux,swift,xcode,macos,carthage,cocoapods,objective-c
+
+Sources/MUDCrawlerCore/Controllers/ApiKey.swift

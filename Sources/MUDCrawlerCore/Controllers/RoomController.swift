@@ -17,7 +17,7 @@ class RoomController {
 
 	private(set) var rooms = [Int: RoomLog]()
 	private(set) var currentRoom: Int?
-	private let apiConnection = ApiConnection(token: "a010c017b8562e13b8f933b546a71caccca1c990")
+	private let apiConnection = ApiConnection(token: apikey)
 
 	let commandQueue = CommandQueue()
 
