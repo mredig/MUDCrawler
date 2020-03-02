@@ -422,6 +422,11 @@ class RoomController {
 		let plistData = try PropertyListEncoder().encode(rooms)
 		let jsonEnc = JSONEncoder()
 		jsonEnc.keyEncodingStrategy = .convertToSnakeCase
+		if #available(OSX 10.13, *) {
+			jsonEnc.outputFormatting = [.prettyPrinted, .sortedKeys]
+		} else {
+			jsonEnc.outputFormatting = [.prettyPrinted]
+		}
 		let jsonData = try jsonEnc.encode(rooms)
 
 		try plistOut.write(plistData)
