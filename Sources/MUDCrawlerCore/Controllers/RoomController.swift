@@ -287,7 +287,7 @@ class RoomController {
 					dateCompletion(cdTime)
 				}
 			}
-			print("added move to \(nextRoomID ?? -1)")
+			print("added move to \(nextRoomID ?? "unknown")")
 		}
 		waitForCommandQueue()
 	}
