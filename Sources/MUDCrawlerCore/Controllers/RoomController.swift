@@ -238,6 +238,8 @@ class RoomController {
 		updateMessages(roomInfo.messages, forRoom: roomInfo.roomID)
 		if rooms[roomInfo.roomID] == nil {
 			let room = RoomLog(id: roomInfo.roomID,
+							   title: roomInfo.title,
+							   description: roomInfo.description,
 							   location: roomInfo.coordinates,
 							   elevation: roomInfo.elevation,
 							   terrain: roomInfo.terrain,

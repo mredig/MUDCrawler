@@ -15,6 +15,8 @@ class RoomLog: Codable, Equatable {
 	}
 
 	let id: Int
+	let title: String
+	let description: String
 	let location: RoomLocation
 	var connections: [Direction: Int]
 	var unknownConnections = Set<Direction>()
@@ -23,13 +25,15 @@ class RoomLog: Codable, Equatable {
 	let items: [String]?
 	var messages: Set<String>
 
-	init(id: Int, location: RoomLocation, elevation: Double?, terrain: String?, items: [String]?, messages: Set<String>) {
+	init(id: Int, title: String, description: String, location: RoomLocation, elevation: Double?, terrain: String?, items: [String]?, messages: Set<String>) {
 		self.id = id
 		self.location = location
 		connections = [Direction: Int]()
 		self.elevation = elevation
 		self.terrain = terrain
 		self.items = items
+		self.title = title
+		self.description = description
 		self.messages = messages
 	}
 }

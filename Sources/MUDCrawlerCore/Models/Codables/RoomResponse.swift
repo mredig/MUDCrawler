@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RoomResponse: Codable {
+struct RoomResponse: ServerResponse {
 	let roomID: Int
 	let title: String
 	let description: String
