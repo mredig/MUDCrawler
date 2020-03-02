@@ -540,6 +540,9 @@ class RoomController {
 		let strings = flipped.map { $0.joined(separator: "") }
 
 		for row in strings {
+			guard row.contains(where: { character -> Bool in
+				character != " "
+			}) else { continue }
 			print(row)
 		}
 	}
