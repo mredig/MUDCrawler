@@ -416,6 +416,12 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	func foundItems() {
+		print("Note, these may have been picked up!")
+		let roomsWithItems = rooms.filter { ($0.value.items?.count ?? 0) > 0 }
+		roomsWithItems.forEach { print("Room \($0.key) has \($0.value.items ?? [])") }
+	}
+
 	// MARK: - Path calculation
 	/// Performs a breadth first search to get from start to destination
 	func shortestRoute(from startRoomID: Int, to destinationRoomID: Int) throws -> [PathElement<Direction>] {
