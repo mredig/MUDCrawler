@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PlayerRep: ServerResponse {
+struct PlayerResponse: ServerResponse {
 	let name: String
 	let cooldown: Double
 	let encumbrance: Int

@@ -63,6 +63,21 @@ public class MUDCrawler {
 		else if command == "status" {
 			roomController.playerStatus()
 		}
+		else if command.hasPrefix("fly") {
+			fly(command: command)
+		}
+		else if command.hasPrefix("equip") {
+			equip(command: command)
+		}
+		else if command.hasPrefix("unequip") {
+			unequip(command: command)
+		}
+		else if command.hasPrefix("newname") {
+			changeName(command: command)
+		}
+		else if command == "pray" {
+			roomController.pray()
+		}
 		else if command == "explore" {
 			do {
 				try roomController.explore()
@@ -113,5 +128,27 @@ public class MUDCrawler {
 	func examine(command: String) {
 		let entity = command.replacingOccurrences(of: "^examine ", with: "", options: .regularExpression, range: nil)
 		roomController.examine(entity: entity)
+	}
+
+	func changeName(command: String) {
+		let newName = command.replacingOccurrences(of: "^newname ", with: "", options: .regularExpression, range: nil)
+		roomController.changeName(to: newName)
+	}
+
+	func equip(command: String) {
+		let gear = command.replacingOccurrences(of: "^equip ", with: "", options: .regularExpression, range: nil)
+		roomController.equip(item: gear)
+	}
+
+	func unequip(command: String) {
+		let gear = command.replacingOccurrences(of: "^unequip ", with: "", options: .regularExpression, range: nil)
+		roomController.unequip(item: gear)
+	}
+
+	func fly(command: String) {
+		let directionRaw = command.replacingOccurrences(of: "^fly ", with: "", options: .regularExpression, range: nil)
+		guard let direction = Direction(rawValue: directionRaw) else { return }
+
+		roomController.fly(in: direction)
 	}
 }

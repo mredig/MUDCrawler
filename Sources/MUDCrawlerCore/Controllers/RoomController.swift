@@ -80,6 +80,36 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	func fly(in direction: Direction, completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
+		guard let currentRoom = currentRoom else { return }
+
+		let nextRoomID: String?
+		if let nextID = rooms[currentRoom]?.connections[direction] {
+			nextRoomID = "\(nextID)"
+		} else {
+			nextRoomID = nil
+		}
+
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.fly(direction: direction, predictedRoom: nextRoomID) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let roomInfo):
+					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					self.logRoomInfo(roomInfo, movedInDirection: direction)
+					print(roomInfo)
+				case .failure(let error):
+					print("Error moving rooms: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+				completion?(result)
+			}
+		}
+
+		waitForCommandQueue()
+	}
+
 	func go(to roomID: Int, quietly: Bool) throws {
 		guard let currentRoom = currentRoom else { return }
 		guard rooms[roomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: roomID) }
@@ -196,6 +226,82 @@ class RoomController {
 		guard currentRoom != nil else { return }
 		commandQueue.addCommand { dateCompletion in
 			self.apiConnection.playerStatus { result in
+				let cdTime: Date
+				switch result {
+				case .success(let playerInfo):
+					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
+					print(playerInfo)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
+	func equip(item: String) {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.equip(item: item) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let playerInfo):
+					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
+					print(playerInfo)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
+	func unequip(item: String) {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.unequip(item: item) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let playerInfo):
+					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
+					print(playerInfo)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
+	func changeName(to name: String) {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.changeName(newName: name) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let playerInfo):
+					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
+					print(playerInfo)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
+	func pray() {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.pray { result in
 				let cdTime: Date
 				switch result {
 				case .success(let playerInfo):
@@ -413,8 +519,9 @@ class RoomController {
 
 		for (_, room) in rooms {
 			let location = room.location
-			var char = room.unknownConnections.isEmpty ? "X" : "?"
+			var char = room.unknownConnections.isEmpty ? "+" : "?"
 			char = room.id == 0 ? "O" : char
+			char = room.id == 1 ? "S" : char
 			char = room.id == 55 ? "W" : char
 			char = room.terrain == "TRAP" ? "!" : char
 

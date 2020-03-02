@@ -66,6 +66,17 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
+	// FIXME: UNKNOWN RESULT AND HEADER TYPE
+	func fly(direction: Direction, predictedRoom: String?, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("fly", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(DirectionWrapper(direction: direction, nextRoomID: predictedRoom))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
 	func takeItem(_ item: String, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
@@ -96,7 +107,7 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
-	func playerStatus(completion: @escaping (Result<PlayerRep, NetworkError>) -> Void) {
+	func playerStatus(completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("status", isDirectory: true)
@@ -115,4 +126,46 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
+	// FIXME: UNKNOWN RESULT TYPE
+	func equip(item: String, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("wear", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(NamedItem(name: item))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
+	// FIXME: UNKNOWN RESULT TYPE
+	func unequip(item: String, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("undress", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(NamedItem(name: item))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
+	// FIXME: UNKNOWN RESULT TYPE
+	func changeName(newName: String, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("change_name", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(NamedItem(name: newName))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
+	// FIXME: UNKNOWN RESULT TYPE
+	func pray(completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("pray", isDirectory: true)
+
+		let request = getRequest(from: url, method: .post)
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
 }
