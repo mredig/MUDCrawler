@@ -10,3 +10,8 @@ import Foundation
 struct NamedItem: Codable {
 	let name: String
 }
+
+struct SellingItem: Codable {
+	let name: String
+	let confirm: String?
+}

@@ -86,6 +86,16 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
+	func sellItem(_ item: String, confirm: Bool, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("sell", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(SellingItem(name: item, confirm: confirm ? "yes" : nil))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
 	func playerStatus(completion: @escaping (Result<PlayerRep, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
@@ -104,4 +114,5 @@ class ApiConnection {
 		request.encodeData(NamedItem(name: entity))
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
+
 }
