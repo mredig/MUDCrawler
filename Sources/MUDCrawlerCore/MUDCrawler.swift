@@ -17,11 +17,19 @@ public class MUDCrawler {
 		}
 	}
 
+	// MARK: - Game Loop
 	public func gameLoop() {
 		let command = promptPlayerInput()
 		performCommand(command)
 	}
 
+	func promptPlayerInput() -> String {
+		print("\nWhat would you like to do?: ", terminator: "")
+		guard let userInput = readLine(strippingNewline: true) else { return "" }
+		return userInput.lowercased()
+	}
+
+	// MARK: - Command handling
 	let directions = Set("nswe".map { String($0) })
 	func performCommand(_ command: String) {
 		if command == "init" {
@@ -48,6 +56,7 @@ public class MUDCrawler {
 		}
 	}
 
+	// MARK: - Command filters
 	func gotoRoom(command: String) {
 		guard let destination = command.split(separator: " ").last, let destID = Int(destination) else {
 			print("\(command) is invalid. Try again")
@@ -65,9 +74,4 @@ public class MUDCrawler {
 		roomController.take(item: item)
 	}
 
-	func promptPlayerInput() -> String {
-		print("\nWhat would you like to do?: ", terminator: "")
-		guard let userInput = readLine(strippingNewline: true) else { return "" }
-		return userInput.lowercased()
-	}
 }
