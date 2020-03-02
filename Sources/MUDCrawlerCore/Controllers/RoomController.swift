@@ -72,6 +72,38 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	func testQueue() {
+		let directions: [Direction] = [.north, .south, .north, .south]
+
+		var previousRoom = currentRoom!
+		for direction in directions {
+			let nextRoomID: String?
+			if let nextID = rooms[previousRoom]?.connections[direction] {
+				nextRoomID = "\(nextID)"
+				previousRoom = nextID
+			} else {
+				nextRoomID = nil
+			}
+			commandQueue.addCommand { dateCompletion in
+				self.apiConnection.movePlayer(direction: direction, predictedRoom: nextRoomID) { result in
+					let cdTime: Date
+					switch result {
+					case .success(let roomInfo):
+						cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+						self.logRoomInfo(roomInfo, movedInDirection: direction)
+						print(roomInfo)
+					case .failure(let error):
+						print("Error moving player: \(error)")
+						cdTime = Date()
+					}
+					dateCompletion(cdTime)
+				}
+			}
+			print("added move to \(nextRoomID)")
+		}
+		waitForCommandQueue()
+	}
+
 	private func logRoomInfo(_ roomInfo: RoomResponse, movedInDirection direction: Direction?) {
 		let previousRoomID = currentRoom
 		currentRoom = roomInfo.roomID

@@ -29,6 +29,8 @@ public class MUDCrawler {
 		} else if directions.contains(command) {
 			guard let direction = Direction(rawValue: command) else { return }
 			roomController.move(in: direction)
+		} else if command == "test" {
+			roomController.testQueue()
 		} else {
 			print("\(command) is an invalid command. Try again.")
 		}
