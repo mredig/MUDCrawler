@@ -81,6 +81,9 @@ public class MUDCrawler {
 		else if command.hasPrefix("newname") {
 			changeName(command: command)
 		}
+		else if command.hasPrefix("transmog") {
+			transmog(command: command)
+		}
 		else if command.hasPrefix("dist") {
 			distance(command: command)
 		}
@@ -185,5 +188,10 @@ public class MUDCrawler {
 	func ghostTake(command: String) {
 		let gear = command.replacingOccurrences(of: "^take ", with: "", options: .regularExpression, range: nil)
 		roomController.ghostReceive(item: gear)
+	}
+
+	func transmog(command: String) {
+		let gear = command.replacingOccurrences(of: "^transmog ", with: "", options: .regularExpression, range: nil)
+		roomController.transmog(item: gear)
 	}
 }

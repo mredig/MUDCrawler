@@ -189,4 +189,14 @@ class ApiConnection {
 		request.encodeData(NamedItem(name: item))
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
+
+	func transmog(item: String, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("transmogrify", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(NamedItem(name: item))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
 }
