@@ -31,3 +31,9 @@ struct DirectionWrapper: Codable {
 	let direction: Direction
 	let nextRoomID: String?
 }
+
+struct DashWrapper: Codable {
+	let direction: Direction
+	let numRooms: String
+	let nextRoomIds: String
+}
