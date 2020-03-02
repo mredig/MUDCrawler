@@ -67,15 +67,30 @@ class RoomController {
 		let previousRoomID = currentRoom
 		currentRoom = roomInfo.roomID
 
+		updateMessages(roomInfo.messages, forRoom: roomInfo.roomID)
 		guard rooms[roomInfo.roomID] == nil else { return }
-		let room = RoomLog(id: roomInfo.roomID, location: roomInfo.coordinates)
+		let room = RoomLog(id: roomInfo.roomID,
+						   location: roomInfo.coordinates,
+						   elevation: roomInfo.elevation,
+						   terrain: roomInfo.terrain,
+						   items: roomInfo.items,
+						   messages: Set(roomInfo.messages))
 		rooms[roomInfo.roomID] = room
+		roomInfo.exits.forEach {
+			guard let unknownDirection = Direction(rawValue: $0) else { return }
+			room.unknownConnections.insert(unknownDirection)
+		}
 
 		if let previousRoomID = previousRoomID, let direction = direction {
 			guard let previousRoom = rooms[previousRoomID] else { fatalError("Previous room: \(previousRoomID) not logged!") }
 			connect(previousRoom: previousRoom, newRoom: room, direction: direction)
 		}
 		simpleSaveToPersistentStore()
+	}
+
+	private func updateMessages(_ messages: [String], forRoom roomID: Int) {
+		let newMessages = Set(messages)
+		rooms[roomID]?.messages.formUnion(newMessages)
 	}
 
 	private func connect(previousRoom: RoomLog, newRoom: RoomLog, direction: Direction) {
@@ -104,6 +119,7 @@ class RoomController {
 			fatalError("Room \(previousRoom.id) is already connected to \(previousRoom.connections[direction] ?? -1) in that direction! \(direction). Attempted to connect to \(newRoom.id)")
 		}
 		previousRoom.connections[direction] = newRoom.id
+		previousRoom.unknownConnections.remove(direction)
 	}
 
 	// MARK: - Wait functions
