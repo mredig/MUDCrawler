@@ -236,18 +236,20 @@ class RoomController {
 		currentRoom = roomInfo.roomID
 
 		updateMessages(roomInfo.messages, forRoom: roomInfo.roomID)
-		guard rooms[roomInfo.roomID] == nil else { return }
-		let room = RoomLog(id: roomInfo.roomID,
-						   location: roomInfo.coordinates,
-						   elevation: roomInfo.elevation,
-						   terrain: roomInfo.terrain,
-						   items: roomInfo.items,
-						   messages: Set(roomInfo.messages))
-		rooms[roomInfo.roomID] = room
-		roomInfo.exits.forEach {
-			guard let unknownDirection = Direction(rawValue: $0) else { return }
-			room.unknownConnections.insert(unknownDirection)
+		if rooms[roomInfo.roomID] == nil {
+			let room = RoomLog(id: roomInfo.roomID,
+							   location: roomInfo.coordinates,
+							   elevation: roomInfo.elevation,
+							   terrain: roomInfo.terrain,
+							   items: roomInfo.items,
+							   messages: Set(roomInfo.messages))
+			rooms[roomInfo.roomID] = room
+			roomInfo.exits.forEach {
+				guard let unknownDirection = Direction(rawValue: $0) else { return }
+				room.unknownConnections.insert(unknownDirection)
+			}
 		}
+		guard let room = rooms[roomInfo.roomID] else { return }
 
 		if let previousRoomID = previousRoomID, let direction = direction {
 			guard let previousRoom = rooms[previousRoomID] else { fatalError("Previous room: \(previousRoomID) not logged!") }
