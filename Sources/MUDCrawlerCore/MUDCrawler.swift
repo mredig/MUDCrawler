@@ -33,6 +33,8 @@ public class MUDCrawler {
 			roomController.testQueue()
 		} else if command.hasPrefix("go ") {
 			gotoRoom(command: command)
+		} else if command == "draw" {
+			roomController.drawMap()
 		} else if command == "explore" {
 			do {
 				try roomController.explore()

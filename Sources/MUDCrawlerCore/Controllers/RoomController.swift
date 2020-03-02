@@ -280,6 +280,40 @@ class RoomController {
 		previousRoom.unknownConnections.remove(direction)
 	}
 
+	// MARK: - Visual
+	func drawMap() {
+		let size = rooms.reduce(RoomLocation(x: 0, y: 0)) {
+			RoomLocation(x: max($0.x, $1.value.location.x), y: max($0.y, $1.value.location.y))
+		}
+
+		let row = (0...size.x).map { _ in "     " }
+		var matrix = (0...size.y).map { _ in row }
+
+		for (id, room) in rooms {
+			let location = room.location
+			var char = room.unknownConnections.isEmpty ? "\(id)" : "\(id)?"
+			char = room.id == 0 ? "O" : char
+			char = room.id == 1 ? "S" : char
+
+			while char.count < 5 {
+				char = " \(char) "
+			}
+			while char.count > 5 {
+				char.removeLast()
+			}
+
+			matrix[location.y][location.x] = char
+		}
+
+		let flipped = matrix.reversed()
+
+		let strings = flipped.map { $0.joined(separator: "") }
+
+		for row in strings {
+			print(row)
+		}
+	}
+
 	// MARK: - Wait functions
 	private func waitForCommandQueue() {
 		var printedNotice = false
