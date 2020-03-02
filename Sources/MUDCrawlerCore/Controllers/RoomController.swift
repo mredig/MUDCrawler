@@ -329,10 +329,16 @@ class RoomController {
 	// MARK: - Wait functions
 	private func waitForCommandQueue() {
 		var printedNotice = false
+		var lastTimeNotice = Date(timeIntervalSinceNow: -1)
 		while commandQueue.commandCount > 0 || commandQueue.currentlyExecuting {
 			if !printedNotice {
-				print("waiting for command queue to finish...")
+				print("waiting for command queue to finish...", terminator: "")
 				printedNotice = true
+			}
+			if lastTimeNotice.addingTimeInterval(1) < Date() {
+				lastTimeNotice = Date()
+				let difference = Int(commandQueue.earliestNextCommand.timeIntervalSince1970 - lastTimeNotice.timeIntervalSince1970)
+				print(difference, terminator: difference > 0 ? " " : "\n")
 			}
 			usleep(10000)
 		}
