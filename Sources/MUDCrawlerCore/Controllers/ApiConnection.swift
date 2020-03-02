@@ -62,4 +62,14 @@ class ApiConnection {
 									   nextRoomIds: predictedRoomsStr.joined(separator: ",")))
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
+
+	func takeItem(_ item: String, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("take", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(NamedItem(name: item))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
 }

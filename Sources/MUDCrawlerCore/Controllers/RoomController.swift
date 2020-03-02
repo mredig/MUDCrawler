@@ -113,6 +113,28 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	func take(item: String) {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.takeItem(item) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let roomInfo):
+					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					self.logRoomInfo(roomInfo, movedInDirection: nil)
+					print(roomInfo)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = Date()
+				}
+				dateCompletion(cdTime)
+			}
+		}
+
+		waitForCommandQueue()
+	}
+
+	// MARK: - Path calculation
 	/// Performs a breadth first search to get from start to destination
 	func shortestRoute(from startRoomID: Int, to destinationRoomID: Int) throws -> [PathElement<Direction>] {
 		guard rooms[startRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: startRoomID) }

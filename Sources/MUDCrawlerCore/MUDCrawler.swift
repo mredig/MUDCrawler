@@ -35,6 +35,8 @@ public class MUDCrawler {
 			gotoRoom(command: command)
 		} else if command == "draw" {
 			roomController.drawMap()
+		} else if command.hasPrefix("take") {
+			takeItem(command: command)
 		} else if command == "explore" {
 			do {
 				try roomController.explore()
@@ -56,6 +58,11 @@ public class MUDCrawler {
 		} catch {
 			print("Error going to room: \(error)")
 		}
+	}
+
+	func takeItem(command: String) {
+		let item = command.replacingOccurrences(of: "^take ", with: "", options: .regularExpression, range: nil)
+		roomController.take(item: item)
 	}
 
 	func promptPlayerInput() -> String {
