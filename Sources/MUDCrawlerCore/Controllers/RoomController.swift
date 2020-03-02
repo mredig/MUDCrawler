@@ -25,20 +25,6 @@ class RoomController {
 	}
 
 	func initPlayer(completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
-//		prepareToSendCommand()
-//		apiConnection.initPlayer { result in
-//			switch result {
-//			case .success(let roomInfo):
-//				self.updateCooldown(roomInfo.cooldown)
-//				self.logRoomInfo(roomInfo, movedInDirection: nil)
-//				print(roomInfo)
-//			case .failure(let error):
-//				print("there was an error: \(error)")
-//			}
-//			self.commandCompleted()
-//			completion?(result)
-//		}
-
 		commandQueue.addCommand { dateCompletion in
 			self.apiConnection.initPlayer { result in
 				let cdTime: Date
@@ -55,12 +41,10 @@ class RoomController {
 			}
 		}
 		waitForCommandQueue()
-
 	}
 
 	func move(in direction: Direction, completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
 		guard let currentRoom = currentRoom else { return }
-		prepareToSendCommand()
 
 		let nextRoomID: String?
 		if let nextID = rooms[currentRoom]?.connections[direction] {
@@ -69,19 +53,23 @@ class RoomController {
 			nextRoomID = nil
 		}
 
-		apiConnection.movePlayer(direction: direction, predictedRoom: nextRoomID) { result in
-			switch result {
-			case .success(let roomInfo):
-				print(roomInfo)
-				self.updateCooldown(roomInfo.cooldown)
-				self.logRoomInfo(roomInfo, movedInDirection: direction)
-			case .failure(let error):
-				print("Error moving rooms: \(error)")
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.movePlayer(direction: direction, predictedRoom: nextRoomID) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let roomInfo):
+					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					self.logRoomInfo(roomInfo, movedInDirection: direction)
+					print(roomInfo)
+				case .failure(let error):
+					print("Error moving rooms: \(error)")
+					cdTime = Date()
+				}
+				dateCompletion(cdTime)
 			}
-			self.commandCompleted()
-			completion?(result)
 		}
 
+		waitForCommandQueue()
 	}
 
 	private func logRoomInfo(_ roomInfo: RoomResponse, movedInDirection direction: Direction?) {
@@ -168,7 +156,7 @@ class RoomController {
 		var printedNotice = false
 		while commandQueue.commandCount > 0 || commandQueue.currentlyExecuting {
 			if !printedNotice {
-				print("waiting for response...")
+				print("waiting for command queue...")
 				printedNotice = true
 			}
 			usleep(10000)
