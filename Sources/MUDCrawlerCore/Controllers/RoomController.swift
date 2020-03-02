@@ -72,6 +72,7 @@ class RoomController {
 					cdTime = Date()
 				}
 				dateCompletion(cdTime)
+				completion?(result)
 			}
 		}
 
@@ -192,8 +193,9 @@ class RoomController {
 
 			guard let room = rooms[currentRoom] else { return }
 			guard let direction = room.unknownConnections.first else { continue }
-			print("Checking out a new room...\n\n")
-			move(in: direction)
+			move(in: direction) { _ in
+				print("Checked out a new room...\n\n")
+			}
 		}
 	}
 
