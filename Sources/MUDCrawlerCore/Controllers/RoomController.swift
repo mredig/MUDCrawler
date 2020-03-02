@@ -10,6 +10,10 @@ import Files
 import NetworkHandler
 
 class RoomController {
+	enum RoomControllerError: Error {
+		case roomDoesntExist(roomID: Int)
+		case pathNotFound
+	}
 
 	private(set) var rooms = [Int: RoomLog]()
 	private(set) var currentRoom: Int?
@@ -70,6 +74,65 @@ class RoomController {
 		}
 
 		waitForCommandQueue()
+	}
+
+	/// Performs a breadth first search to get from start to destination
+	func shortestRoute(from startRoomID: Int, to destinationRoomID: Int) throws -> [(direction: Direction, roomID: Int)] {
+		guard rooms[startRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: startRoomID) }
+		guard rooms[destinationRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: destinationRoomID) }
+
+		let queue = Queue<[(direction: Direction?, roomID: Int)]>()
+		queue.enqueue([(nil, startRoomID)])
+		var visited = Set<Int>()
+
+		while queue.count > 0 {
+			guard let path = queue.dequeue() else { continue }
+			guard let (_, endRoomID) = path.last else { continue }
+			if endRoomID == destinationRoomID {
+				return path.compactMap {
+					guard let direction = $0.direction else { return nil }
+					return (direction, $0.roomID)
+				}
+			}
+			guard !visited.contains(endRoomID) else { continue }
+			visited.insert(endRoomID)
+			guard let endRoom = rooms[endRoomID] else { continue }
+			for (direction, connectedRoomID) in endRoom.connections {
+				var newPath = path
+				newPath.append((direction, connectedRoomID))
+				queue.enqueue(newPath)
+			}
+		}
+		throw RoomControllerError.pathNotFound
+	}
+
+	func nearestUnexplored(from startRoomID: Int) throws -> [(direction: Direction, roomID: Int)] {
+		guard rooms[startRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: startRoomID) }
+
+		let queue = Queue<[(direction: Direction?, roomID: Int)]>()
+		queue.enqueue([(nil, startRoomID)])
+		var visited = Set<Int>()
+
+		while queue.count > 0 {
+			guard let path = queue.dequeue() else { continue }
+			guard let (_, endRoomID) = path.last else { continue }
+			guard !visited.contains(endRoomID) else { continue }
+			visited.insert(endRoomID)
+
+			guard let endRoom = rooms[endRoomID] else { continue }
+			if endRoom.unknownConnections.count > 0 {
+				return path.compactMap {
+					guard let direction = $0.direction else { return nil }
+					return (direction, $0.roomID)
+				}
+			}
+			for (direction, connectedRoomID) in endRoom.connections {
+				var newPath = path
+				newPath.append((direction, connectedRoomID))
+				queue.enqueue(newPath)
+			}
+		}
+		throw RoomControllerError.pathNotFound
 	}
 
 	func testQueue() {
