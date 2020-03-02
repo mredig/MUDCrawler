@@ -72,6 +72,12 @@ public class MUDCrawler {
 		else if command.hasPrefix("unequip") {
 			unequip(command: command)
 		}
+		else if command.hasPrefix("give") {
+			ghostGive(command: command)
+		}
+		else if command.hasPrefix("take") {
+			ghostTake(command: command)
+		}
 		else if command.hasPrefix("newname") {
 			changeName(command: command)
 		}
@@ -169,5 +175,15 @@ public class MUDCrawler {
 		let directions = path.compactMap { $0.direction.rawValue.first }.map { String($0) }.joined(separator: ", ")
 		print(rooms)
 		print(directions)
+	}
+
+	func ghostGive(command: String) {
+		let gear = command.replacingOccurrences(of: "^give ", with: "", options: .regularExpression, range: nil)
+		roomController.ghostCarry(item: gear)
+	}
+
+	func ghostTake(command: String) {
+		let gear = command.replacingOccurrences(of: "^take ", with: "", options: .regularExpression, range: nil)
+		roomController.ghostReceive(item: gear)
 	}
 }

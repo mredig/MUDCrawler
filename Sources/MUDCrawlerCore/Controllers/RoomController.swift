@@ -317,6 +317,44 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	func ghostCarry(item: String) {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.ghostCarry(item: item) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let playerResponse):
+					cdTime = self.dateFromCooldownValue(playerResponse.cooldown)
+					print(playerResponse)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
+	func ghostReceive(item: String) {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.ghostReceive(item: item) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let playerResponse):
+					cdTime = self.dateFromCooldownValue(playerResponse.cooldown)
+					print(playerResponse)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
 	// MARK: - Path calculation
 	/// Performs a breadth first search to get from start to destination
 	func shortestRoute(from startRoomID: Int, to destinationRoomID: Int) throws -> [PathElement<Direction>] {

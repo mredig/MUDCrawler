@@ -167,4 +167,26 @@ class ApiConnection {
 		let request = getRequest(from: url, method: .post)
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
+
+	// FIXME: UNKNOWN RESULT TYPE
+	func ghostCarry(item: String, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("carry", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(NamedItem(name: item))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
+	// FIXME: UNKNOWN RESULT TYPE
+	func ghostReceive(item: String, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("receive", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(NamedItem(name: item))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
 }
