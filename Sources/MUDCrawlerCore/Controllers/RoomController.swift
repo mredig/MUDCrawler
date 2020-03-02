@@ -133,16 +133,17 @@ class RoomController {
 		throw RoomControllerError.pathNotFound
 	}
 
-	func nearestUnexplored(from startRoomID: Int) throws -> [(direction: Direction, roomID: Int)] {
+	func nearestUnexplored(from startRoomID: Int) throws -> [PathElement<Direction>] {
 		guard rooms[startRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: startRoomID) }
 
-		let queue = Queue<[(direction: Direction?, roomID: Int)]>()
-		queue.enqueue([(nil, startRoomID)])
+		let queue = Queue<[PathElement<Direction?>]>()
+		queue.enqueue([PathElement(direction: nil, roomID: startRoomID)])
 		var visited = Set<Int>()
 
 		while queue.count > 0 {
 			guard let path = queue.dequeue() else { continue }
-			guard let (_, endRoomID) = path.last else { continue }
+			guard let lastPathElement = path.last else { continue }
+			let endRoomID = lastPathElement.roomID
 			guard !visited.contains(endRoomID) else { continue }
 			visited.insert(endRoomID)
 
@@ -150,12 +151,12 @@ class RoomController {
 			if endRoom.unknownConnections.count > 0 {
 				return path.compactMap {
 					guard let direction = $0.direction else { return nil }
-					return (direction, $0.roomID)
+					return PathElement(direction: direction, roomID: $0.roomID)
 				}
 			}
 			for (direction, connectedRoomID) in endRoom.connections {
 				var newPath = path
-				newPath.append((direction, connectedRoomID))
+				newPath.append(PathElement(direction: direction, roomID: connectedRoomID))
 				queue.enqueue(newPath)
 			}
 		}
