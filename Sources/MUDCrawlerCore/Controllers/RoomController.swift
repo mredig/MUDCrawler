@@ -153,6 +153,25 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	func examine(entity: String) {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.examine(entity: entity) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let examineResponse):
+					cdTime = self.dateFromCooldownValue(examineResponse.cooldown)
+					print(examineResponse)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = Date()
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
 	func playerStatus() {
 		guard currentRoom != nil else { return }
 		commandQueue.addCommand { dateCompletion in

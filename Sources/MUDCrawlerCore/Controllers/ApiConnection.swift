@@ -94,4 +94,14 @@ class ApiConnection {
 		let request = getRequest(from: url, method: .post)
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
+
+	func examine(entity: String, completion: @escaping (Result<ExamineResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("examine", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(NamedItem(name: entity))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
 }

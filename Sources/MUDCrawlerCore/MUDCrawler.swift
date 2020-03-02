@@ -54,6 +54,9 @@ public class MUDCrawler {
 		else if command.hasPrefix("drop") {
 			dropItem(command: command)
 		}
+		else if command.hasPrefix("examine") {
+			examine(command: command)
+		}
 		else if command == "status" {
 			roomController.playerStatus()
 		}
@@ -90,5 +93,10 @@ public class MUDCrawler {
 	func dropItem(command: String) {
 		let item = command.replacingOccurrences(of: "^drop ", with: "", options: .regularExpression, range: nil)
 		roomController.drop(item: item)
+	}
+
+	func examine(command: String) {
+		let entity = command.replacingOccurrences(of: "^examine ", with: "", options: .regularExpression, range: nil)
+		roomController.examine(entity: entity)
 	}
 }
