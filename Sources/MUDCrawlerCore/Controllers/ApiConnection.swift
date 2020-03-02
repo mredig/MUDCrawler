@@ -199,4 +199,37 @@ class ApiConnection {
 		request.encodeData(NamedItem(name: item))
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
+
+	// MARK: - lambda coin stuff
+	// FIXME: UNKNOWN RESULT TYPE
+	func submitProof(proof: Int, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("bc", isDirectory: true)
+			.appendingPathComponent("mine", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(ProofSubmission(proof: proof))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
+	func getLastProof(completion: @escaping (Result<LastProof, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("bc", isDirectory: true)
+			.appendingPathComponent("last_proof", isDirectory: true)
+
+		let request = getRequest(from: url, method: .get)
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
+	func getBalance(completion: @escaping (Result<BasicResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("bc", isDirectory: true)
+			.appendingPathComponent("get_balance", isDirectory: true)
+
+		let request = getRequest(from: url, method: .get)
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
 }
