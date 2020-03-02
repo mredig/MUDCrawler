@@ -15,14 +15,14 @@ class RoomLog: Codable, Equatable {
 	}
 
 	let id: Int
-	let title: String
-	let description: String
+	var title: String
+	var description: String
 	let location: RoomLocation
 	var connections: [Direction: Int]
 	var unknownConnections = Set<Direction>()
 	let elevation: Double?
 	let terrain: String?
-	let items: [String]?
+	var items: [String]?
 	var messages: Set<String>
 
 	init(id: Int, title: String, description: String, location: RoomLocation, elevation: Double?, terrain: String?, items: [String]?, messages: Set<String>) {

@@ -28,6 +28,7 @@ class RoomController {
 		commandQueue.start()
 	}
 
+	// MARK: - API Directives
 	/// adds an init command to the queue and waits for the cooldown to finish
 	func initPlayer(completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
 		commandQueue.addCommand { dateCompletion in
@@ -231,11 +232,12 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	// MARK: - logging
 	private func logRoomInfo(_ roomInfo: RoomResponse, movedInDirection direction: Direction?) {
 		let previousRoomID = currentRoom
 		currentRoom = roomInfo.roomID
 
-		updateMessages(roomInfo.messages, forRoom: roomInfo.roomID)
+		updateRoom(from: roomInfo, room: roomInfo.roomID)
 		if rooms[roomInfo.roomID] == nil {
 			let room = RoomLog(id: roomInfo.roomID,
 							   title: roomInfo.title,
@@ -263,6 +265,13 @@ class RoomController {
 	private func updateMessages(_ messages: [String], forRoom roomID: Int) {
 		let newMessages = Set(messages)
 		rooms[roomID]?.messages.formUnion(newMessages)
+	}
+
+	private func updateRoom(from info: RoomResponse, room: Int) {
+		updateMessages(info.messages, forRoom: room)
+		rooms[room]?.title = info.title
+		rooms[room]?.description = info.description
+		rooms[room]?.items = info.items
 	}
 
 	private func connect(previousRoom: RoomLog, newRoom: RoomLog, direction: Direction) {
