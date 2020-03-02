@@ -76,6 +76,33 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	func go(to roomID: Int) throws {
+		guard let currentRoom = currentRoom else { return }
+		guard rooms[roomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: roomID) }
+
+		let path = try shortestRoute(from: currentRoom, to: roomID)
+
+		for (direction, room) in path {
+			commandQueue.addCommand { dateCompletion in
+				self.apiConnection.movePlayer(direction: direction, predictedRoom: "\(room)") { result in
+					let cdTime: Date
+					switch result {
+					case .success(let roomInfo):
+						print(roomInfo)
+						self.logRoomInfo(roomInfo, movedInDirection: direction)
+						cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					case .failure(let error):
+						print("Error moving player: \(error)")
+						cdTime = Date()
+					}
+					dateCompletion(cdTime)
+				}
+			}
+			print("Added \(direction) to \(room) to queue.")
+		}
+		waitForCommandQueue()
+	}
+
 	/// Performs a breadth first search to get from start to destination
 	func shortestRoute(from startRoomID: Int, to destinationRoomID: Int) throws -> [(direction: Direction, roomID: Int)] {
 		guard rooms[startRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: startRoomID) }

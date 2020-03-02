@@ -31,8 +31,22 @@ public class MUDCrawler {
 			roomController.move(in: direction)
 		} else if command == "test" {
 			roomController.testQueue()
+		} else if command.hasPrefix("go "){
+			gotoRoom(command: command)
 		} else {
 			print("\(command) is an invalid command. Try again.")
+		}
+	}
+
+	func gotoRoom(command: String) {
+		guard let destination = command.split(separator: " ").last, let destID = Int(destination) else {
+			print("\(command) is invalid. Try again")
+			return
+		}
+		do {
+			try roomController.go(to: destID)
+		} catch {
+			print("Error going to room: \(error)")
 		}
 	}
 
