@@ -17,24 +17,45 @@ class RoomController {
 	private(set) var waitingForResponse = false
 	private(set) var cooldownExpiration = Date()
 
+	let commandQueue = CommandQueue()
+
 	init() {
 		simpleLoadFromPersistentStore()
+		commandQueue.start()
 	}
 
 	func initPlayer(completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
-		prepareToSendCommand()
-		apiConnection.initPlayer { result in
-			switch result {
-			case .success(let roomInfo):
-				self.updateCooldown(roomInfo.cooldown)
-				self.logRoomInfo(roomInfo, movedInDirection: nil)
-				print(roomInfo)
-			case .failure(let error):
-				print("there was an error: \(error)")
+//		prepareToSendCommand()
+//		apiConnection.initPlayer { result in
+//			switch result {
+//			case .success(let roomInfo):
+//				self.updateCooldown(roomInfo.cooldown)
+//				self.logRoomInfo(roomInfo, movedInDirection: nil)
+//				print(roomInfo)
+//			case .failure(let error):
+//				print("there was an error: \(error)")
+//			}
+//			self.commandCompleted()
+//			completion?(result)
+//		}
+
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.initPlayer { result in
+				let cdTime: Date
+				switch result {
+				case .success(let roomInfo):
+					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					self.logRoomInfo(roomInfo, movedInDirection: nil)
+					print(roomInfo)
+				case .failure(let error):
+					print("Error initing player: \(error)")
+					cdTime = Date()
+				}
+				dateCompletion(cdTime)
 			}
-			self.commandCompleted()
-			completion?(result)
 		}
+		waitForCommandQueue()
+
 	}
 
 	func move(in direction: Direction, completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
@@ -143,6 +164,17 @@ class RoomController {
 		}
 	}
 
+	private func waitForCommandQueue() {
+		var printedNotice = false
+		while commandQueue.commandCount > 0 || commandQueue.currentlyExecuting {
+			if !printedNotice {
+				print("waiting for response...")
+				printedNotice = true
+			}
+			usleep(10000)
+		}
+	}
+
 	func waitForResponse() {
 		var printedNotice = false
 		while waitingForResponse {
@@ -154,8 +186,12 @@ class RoomController {
 		}
 	}
 
+	private func dateFromCooldownValue(_ cooldown: TimeInterval) -> Date {
+		Date(timeIntervalSinceNow: cooldown)
+	}
+
 	func updateCooldown(_ cooldown: TimeInterval) {
-		cooldownExpiration = Date(timeIntervalSinceNow: cooldown)
+		cooldownExpiration = dateFromCooldownValue(cooldown)
 	}
 
 	// MARK: - Persistence
