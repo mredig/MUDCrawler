@@ -279,15 +279,15 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
-	func changeName(to name: String) {
+	func changeName(to name: String, confirm: Bool) {
 		guard currentRoom != nil else { return }
 		commandQueue.addCommand { dateCompletion in
-			self.apiConnection.changeName(newName: name) { result in
+			self.apiConnection.changeName(newName: name, confirm: confirm) { result in
 				let cdTime: Date
 				switch result {
-				case .success(let playerInfo):
-					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
-					print(playerInfo)
+				case .success(let roomInfo):
+					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					print(roomInfo)
 				case .failure(let error):
 					print("Error taking item: \(error)")
 					cdTime = self.cooldownFromError(error)
@@ -534,6 +534,7 @@ class RoomController {
 		rooms[room]?.title = info.title
 		rooms[room]?.description = info.description
 		rooms[room]?.items = info.items
+		print("Room: \(room) players: \(info.players ?? [])")
 	}
 
 	private func connect(previousRoom: RoomLog, newRoom: RoomLog, direction: Direction) {

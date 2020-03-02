@@ -103,7 +103,7 @@ class ApiConnection {
 			.appendingPathComponent("sell", isDirectory: true)
 
 		var request = getRequest(from: url, method: .post)
-		request.encodeData(SellingItem(name: item, confirm: confirm ? "yes" : nil))
+		request.encodeData(ConfirmingItem(name: item, confirm: confirm ? "yes" : nil))
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
@@ -149,13 +149,13 @@ class ApiConnection {
 	}
 
 	// FIXME: UNKNOWN RESULT TYPE
-	func changeName(newName: String, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+	func changeName(newName: String, confirm: Bool, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("change_name", isDirectory: true)
 
 		var request = getRequest(from: url, method: .post)
-		request.encodeData(NamedItem(name: newName))
+		request.encodeData(ConfirmingItem(name: newName, confirm: confirm ? "aye" : nil))
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 

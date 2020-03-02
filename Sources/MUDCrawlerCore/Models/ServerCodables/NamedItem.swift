@@ -11,7 +11,7 @@ struct NamedItem: Codable {
 	let name: String
 }
 
-struct SellingItem: Codable {
+struct ConfirmingItem: Codable {
 	let name: String
 	let confirm: String?
 }

@@ -143,8 +143,15 @@ public class MUDCrawler {
 	}
 
 	func changeName(command: String) {
-		let newName = command.replacingOccurrences(of: "^newname ", with: "", options: .regularExpression, range: nil)
-		roomController.changeName(to: newName)
+		var newName = command.replacingOccurrences(of: "^newname ", with: "", options: .regularExpression, range: nil)
+		let confirm: Bool
+		if command.hasSuffix(" y") {
+			confirm = true
+			newName = newName.replacingOccurrences(of: " y$", with: "", options: .regularExpression, range: nil)
+		} else {
+			confirm = false
+		}
+		roomController.changeName(to: newName, confirm: confirm)
 	}
 
 	func equip(command: String) {
