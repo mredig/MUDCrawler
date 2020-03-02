@@ -55,7 +55,7 @@ class ApiConnection {
 	func dashPlayer(direction: Direction, predictedRooms: [Int], completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
-			.appendingPathComponent("move", isDirectory: true)
+			.appendingPathComponent("dash", isDirectory: true)
 
 		let predictedRoomsStr = predictedRooms.map { String($0) }
 
@@ -66,7 +66,6 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
-	// FIXME: UNKNOWN RESULT AND HEADER TYPE
 	func fly(direction: Direction, predictedRoom: String?, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)

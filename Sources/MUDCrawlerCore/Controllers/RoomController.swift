@@ -115,30 +115,72 @@ class RoomController {
 		guard rooms[roomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: roomID) }
 
 		let path = try shortestRoute(from: currentRoom, to: roomID)
+		let movements = path.poweredUp(rooms: rooms)
 
-		for step in path {
-			let direction = step.direction
-			let room = step.roomID
-			commandQueue.addCommand { dateCompletion in
-				self.apiConnection.movePlayer(direction: direction, predictedRoom: "\(room)") { result in
-					let cdTime: Date
-					switch result {
-					case .success(let roomInfo):
-						if quietly {
-							print("Entered room \(roomInfo.roomID)")
-						} else {
-							print(roomInfo)
+		for step in movements {
+			switch step {
+			case .dash(direction: let direction, roomIDs: let roomIDs):
+				commandQueue.addCommand { dateCompletion in
+					self.apiConnection.dashPlayer(direction: direction, predictedRooms: roomIDs) { result in
+						let cdTime: Date
+						switch result {
+						case .success(let roomInfo):
+							if quietly {
+								print("Entered room \(roomInfo.roomID)")
+							} else {
+								print(roomInfo)
+							}
+							self.logRoomInfo(roomInfo, movedInDirection: direction, dashed: true)
+							cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+						case .failure(let error):
+							print("Error moving player: \(error)")
+							cdTime = self.cooldownFromError(error)
 						}
-						self.logRoomInfo(roomInfo, movedInDirection: direction)
-						cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					case .failure(let error):
-						print("Error moving player: \(error)")
-						cdTime = self.cooldownFromError(error)
+						dateCompletion(cdTime)
 					}
-					dateCompletion(cdTime)
+				}
+			case .fly(direction: let direction, roomID: let roomID):
+				commandQueue.addCommand { dateCompletion in
+					self.apiConnection.fly(direction: direction, predictedRoom: "\(roomID)") { result in
+						let cdTime: Date
+						switch result {
+						case .success(let roomInfo):
+							if quietly {
+								print("Entered room \(roomInfo.roomID)")
+							} else {
+								print(roomInfo)
+							}
+							self.logRoomInfo(roomInfo, movedInDirection: direction)
+							cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+						case .failure(let error):
+							print("Error moving player: \(error)")
+							cdTime = self.cooldownFromError(error)
+						}
+						dateCompletion(cdTime)
+					}
+				}
+			case .move(direction: let direction, roomID: let roomID):
+				commandQueue.addCommand { dateCompletion in
+					self.apiConnection.movePlayer(direction: direction, predictedRoom: "\(roomID)") { result in
+						let cdTime: Date
+						switch result {
+						case .success(let roomInfo):
+							if quietly {
+								print("Entered room \(roomInfo.roomID)")
+							} else {
+								print(roomInfo)
+							}
+							self.logRoomInfo(roomInfo, movedInDirection: direction)
+							cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+						case .failure(let error):
+							print("Error moving player: \(error)")
+							cdTime = self.cooldownFromError(error)
+						}
+						dateCompletion(cdTime)
+					}
 				}
 			}
-			print("Added \(direction) to \(room) to queue.")
+			print("Added \(step) to queue.")
 		}
 		waitForCommandQueue()
 	}
@@ -446,7 +488,7 @@ class RoomController {
 			let pathToNearestUnexplored = try nearestUnexplored(from: currentRoom)
 			if let lastElement = pathToNearestUnexplored.last {
 				print("Room \(lastElement.roomID) still has unexplored rooms. Headed there now!\n\n")
-				try go(to: lastElement.roomID, quietly: true)
+				try go(to: lastElement.roomID, quietly: false)
 				currentRoom = lastElement.roomID
 			}
 
@@ -495,7 +537,7 @@ class RoomController {
 	}
 
 	// MARK: - logging
-	private func logRoomInfo(_ roomInfo: RoomResponse, movedInDirection direction: Direction?) {
+	private func logRoomInfo(_ roomInfo: RoomResponse, movedInDirection direction: Direction?, dashed: Bool = false) {
 		let previousRoomID = currentRoom
 		currentRoom = roomInfo.roomID
 
@@ -517,7 +559,7 @@ class RoomController {
 		}
 		guard let room = rooms[roomInfo.roomID] else { return }
 
-		if let previousRoomID = previousRoomID, let direction = direction {
+		if let previousRoomID = previousRoomID, let direction = direction, !dashed {
 			guard let previousRoom = rooms[previousRoomID] else { fatalError("Previous room: \(previousRoomID) not logged!") }
 			connect(previousRoom: previousRoom, newRoom: room, direction: direction)
 		}
