@@ -159,8 +159,7 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
-	// FIXME: UNKNOWN RESULT TYPE
-	func pray(completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+	func pray(completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("pray", isDirectory: true)

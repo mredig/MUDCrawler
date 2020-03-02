@@ -304,9 +304,9 @@ class RoomController {
 			self.apiConnection.pray { result in
 				let cdTime: Date
 				switch result {
-				case .success(let playerInfo):
-					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
-					print(playerInfo)
+				case .success(let roomInfo):
+					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					print(roomInfo)
 				case .failure(let error):
 					print("Error taking item: \(error)")
 					cdTime = self.cooldownFromError(error)
