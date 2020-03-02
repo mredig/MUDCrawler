@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol ServerResponse: Codable {
+protocol ServerResponse: Codable, BetterDebugOutput {
 	var cooldown: Double { get }
 	var errors: [String] { get }
 }
