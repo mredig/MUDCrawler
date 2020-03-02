@@ -456,7 +456,7 @@ class RoomController {
 	}
 
 	private func dateFromCooldownValue(_ cooldown: TimeInterval) -> Date {
-		Date(timeIntervalSinceNow: cooldown)
+		Date(timeIntervalSinceNow: cooldown + 0.01)
 	}
 
 	private func cooldownFromError(_ error: Error) -> Date {
