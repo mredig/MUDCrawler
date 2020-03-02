@@ -75,6 +75,9 @@ public class MUDCrawler {
 		else if command.hasPrefix("newname") {
 			changeName(command: command)
 		}
+		else if command.hasPrefix("dist") {
+			distance(command: command)
+		}
 		else if command == "pray" {
 			roomController.pray()
 		}
@@ -150,5 +153,21 @@ public class MUDCrawler {
 		guard let direction = Direction(rawValue: directionRaw) else { return }
 
 		roomController.fly(in: direction)
+	}
+
+	func distance(command: String) {
+		let roomIDStr = command.replacingOccurrences(of: "^dist ", with: "", options: .regularExpression, range: nil)
+		guard let currentRoom = roomController.currentRoom else {
+			print("No current room")
+			return
+		}
+		guard let roomID = Int(roomIDStr), let path = try? roomController.shortestRoute(from: currentRoom, to: roomID) else {
+			print("Path or room doesn't exist")
+			return
+		}
+		let rooms = path.map { $0.roomID }.map { String($0) }.joined(separator: " -> ")
+		let directions = path.compactMap { $0.direction.rawValue.first }.map { String($0) }.joined(separator: ", ")
+		print(rooms)
+		print(directions)
 	}
 }
