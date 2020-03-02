@@ -130,7 +130,45 @@ class RoomController {
 				dateCompletion(cdTime)
 			}
 		}
+		waitForCommandQueue()
+	}
 
+	func drop(item: String) {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.dropItem(item) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let roomInfo):
+					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					self.logRoomInfo(roomInfo, movedInDirection: nil)
+					print(roomInfo)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = Date()
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
+	func playerStatus() {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.playerStatus { result in
+				let cdTime: Date
+				switch result {
+				case .success(let playerInfo):
+					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
+					print(playerInfo)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = Date()
+				}
+				dateCompletion(cdTime)
+			}
+		}
 		waitForCommandQueue()
 	}
 
@@ -249,7 +287,7 @@ class RoomController {
 					dateCompletion(cdTime)
 				}
 			}
-			print("added move to \(nextRoomID)")
+			print("added move to \(nextRoomID ?? -1)")
 		}
 		waitForCommandQueue()
 	}

@@ -26,6 +26,9 @@ class ApiConnection {
 		let encoder = JSONEncoder()
 		encoder.keyEncodingStrategy = .convertToSnakeCase
 		request.encoder = encoder
+		let decoder = JSONDecoder()
+		decoder.keyDecodingStrategy = .convertFromSnakeCase
+		request.decoder = decoder
 		return request
 	}
 
@@ -70,6 +73,25 @@ class ApiConnection {
 
 		var request = getRequest(from: url, method: .post)
 		request.encodeData(NamedItem(name: item))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
+	func dropItem(_ item: String, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("drop", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(NamedItem(name: item))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
+	func playerStatus(completion: @escaping (Result<PlayerRep, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("status", isDirectory: true)
+
+		let request = getRequest(from: url, method: .post)
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 }

@@ -34,24 +34,37 @@ public class MUDCrawler {
 	func performCommand(_ command: String) {
 		if command == "init" {
 			roomController.initPlayer()
-		} else if directions.contains(command) {
+		}
+		else if directions.contains(command) {
 			guard let direction = Direction(rawValue: command) else { return }
 			roomController.move(in: direction)
-		} else if command == "test" {
+		}
+		else if command == "test" {
 			roomController.testQueue()
-		} else if command.hasPrefix("go ") {
+		}
+		else if command.hasPrefix("go ") {
 			gotoRoom(command: command)
-		} else if command == "draw" {
+		}
+		else if command == "draw" {
 			roomController.drawMap()
-		} else if command.hasPrefix("take") {
+		}
+		else if command.hasPrefix("take") {
 			takeItem(command: command)
-		} else if command == "explore" {
+		}
+		else if command.hasPrefix("drop") {
+			dropItem(command: command)
+		}
+		else if command == "status" {
+			roomController.playerStatus()
+		}
+		else if command == "explore" {
 			do {
 				try roomController.explore()
 			} catch {
 				print("Error exploring: \(error)")
 			}
-		} else {
+		}
+		else {
 			print("\(command) is an invalid command. Try again.")
 		}
 	}
@@ -74,4 +87,8 @@ public class MUDCrawler {
 		roomController.take(item: item)
 	}
 
+	func dropItem(command: String) {
+		let item = command.replacingOccurrences(of: "^drop ", with: "", options: .regularExpression, range: nil)
+		roomController.drop(item: item)
+	}
 }
