@@ -16,6 +16,8 @@ enum MovementType: CustomDebugStringConvertible {
 	case move(direction: Direction, roomID: Int)
 	case fly(direction: Direction, roomID: Int)
 	case dash(direction: Direction, roomIDs: [Int])
+	case warp(direction: Direction, roomID: Int)
+	case recall
 
 	var debugDescription: String {
 		switch self {
@@ -25,6 +27,10 @@ enum MovementType: CustomDebugStringConvertible {
 			return "dash: \(dir) - \(ids)"
 		case .fly(direction: let dir, roomID: let id):
 			return "fly: \(dir) - \(id)"
+		case .warp(direction: _, roomID: let id):
+			return "warp: \(id)"
+		case .recall:
+			return "recall"
 		}
 	}
 }
@@ -47,6 +53,16 @@ extension Array where Element == PathElement<Direction> {
 				previousElement = nil
 			}
 			let basePathElement = self[iterator]
+			guard basePathElement.direction != .warp else {
+				movements.append(.warp(direction: .warp, roomID: basePathElement.roomID))
+				iterator += 1
+				continue
+			}
+			guard basePathElement.direction != .recall else {
+				movements.append(.recall)
+				iterator += 1
+				continue
+			}
 			var offset = 1
 			let baseDirection = basePathElement.direction
 			var dashRooms = [basePathElement.roomID]

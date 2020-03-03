@@ -220,9 +220,29 @@ class RoomController {
 						dateCompletion(cdTime)
 					}
 				}
-			case .warp(direction: let direction, roomID: let roomID):
+			case .warp(direction: _, roomID: _):
 				commandQueue.addCommand { dateCompletion in
 					self.apiConnection.warp { result in
+						let cdTime: Date
+						switch result {
+						case .success(let roomInfo):
+							cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+							if quietly {
+								print("Entered room \(roomInfo.roomID)")
+							} else {
+								print(roomInfo)
+							}
+							self.logRoomInfo(roomInfo, movedInDirection: nil)
+						case .failure(let error):
+							print("Error initing player: \(error)")
+							cdTime = self.cooldownFromError(error)
+						}
+						dateCompletion(cdTime)
+					}
+				}
+			case .recall:
+				commandQueue.addCommand { dateCompletion in
+					self.apiConnection.recall { result in
 						let cdTime: Date
 						switch result {
 						case .success(let roomInfo):
@@ -633,10 +653,9 @@ class RoomController {
 		guard currentRoom != nil else { return }
 		while true {
 			do {
-				try go(to: 55, quietly: true)
-				warp()
+				try go(to: 555, quietly: true)
 				guard let mineRoomID = examineWell() else { continue }
-				print("Heading to room \(mineRoomID) for mining")
+				print("\nHeading to room \(mineRoomID) for snitching!\n")
 				try go(to: mineRoomID, quietly: true)
 //				recall()
 			} catch {
@@ -714,6 +733,7 @@ class RoomController {
 				newPath.append(PathElement(direction: direction, roomID: connectedRoomID))
 				queue.enqueue(newPath)
 			}
+			// add warp room to shortest path
 			var warpRoom: Int
 			switch endRoom.id {
 			case 0...499:
@@ -723,6 +743,12 @@ class RoomController {
 			}
 			var newPath = path
 			newPath.append(PathElement(direction: .warp, roomID: warpRoom))
+			queue.enqueue(newPath)
+
+			// add recall room to shortest path
+			guard path.last?.roomID != 0 else { continue }
+			newPath = path
+			newPath.append(PathElement(direction: .recall, roomID: 0))
 			queue.enqueue(newPath)
 		}
 		throw RoomControllerError.pathNotFound
@@ -867,6 +893,8 @@ class RoomController {
 			precondition(previousRoom.location.x + 1 == newRoom.location.x)
 			precondition(previousRoom.location.y == newRoom.location.y)
 		case .warp:
+			return
+		case .recall:
 			return
 		}
 

@@ -13,6 +13,7 @@ enum Direction: String, Codable, Hashable {
 	case east = "e"
 	case west = "w"
 	case warp
+	case recall
 
 	var opposite: Direction {
 		switch self {
@@ -26,6 +27,8 @@ enum Direction: String, Codable, Hashable {
 			return .west
 		case .warp:
 			return .warp
+		case .recall:
+			return .recall
 		}
 	}
 }
