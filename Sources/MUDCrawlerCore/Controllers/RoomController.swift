@@ -254,6 +254,9 @@ class RoomController {
 				case .success(let examineResponse):
 					cdTime = self.dateFromCooldownValue(examineResponse.cooldown)
 					print(examineResponse)
+					if let id = self.getRoomID(from: examineResponse.description) {
+						print("Mine in room \(id)")
+					}
 				case .failure(let error):
 					print("Error taking item: \(error)")
 					cdTime = self.cooldownFromError(error)
@@ -262,6 +265,14 @@ class RoomController {
 			}
 		}
 		waitForCommandQueue()
+	}
+
+	func getRoomID(from description: String) -> Int? {
+		let values = description.split(separator: "\n").map { String($0) }
+		let ints = values.map { UInt8($0, radix: 2) }.compactMap { $0 }
+		let chars = ints.filter { $0 > 47 && $0 < 58 }.compactMap { Unicode.Scalar($0) }.compactMap { Character($0) }
+		let str = String(chars)
+		return Int(str)
 	}
 
 	func playerStatus() {
