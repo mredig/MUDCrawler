@@ -10,4 +10,7 @@ import MUDCrawlerCore
 
 let crawler = MUDCrawler()
 
+
+//CoinMiner.benchMark()
+
 crawler.start()
