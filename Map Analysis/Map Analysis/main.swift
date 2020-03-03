@@ -1,4 +1,11 @@
-//: Playground - noun: a place where people can play
+//
+//  main.swift
+//  Map Analysis
+//
+//  Created by Michael Redig on 3/3/20.
+//  Copyright © 2020 Red_Egg Productions. All rights reserved.
+//
+
 import Foundation
 
 enum Direction: String, Codable, Hashable {
@@ -136,7 +143,8 @@ let meh = Set([
 
 let terrains = Set(allRooms.map { $0.value.terrain }.compactMap { $0 })
 print(terrains)
-
+let elevations = Set(allRooms.map { $0.value.elevation }.compactMap { $0 })
+print(elevations)
 
 for (id, room) in allRooms {
 	guard !meh.contains(room.description) else { continue }
