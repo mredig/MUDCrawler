@@ -378,8 +378,9 @@ class RoomController {
 		while (playerStatus?.capacity ?? 1) < 0.66 {
 			getPlayerStatus()
 
-			let roomNum = Int.random(in: 200...499)
-			print("Wandering to \(roomNum)")
+			var roomNum = Int.random(in: 200...499)
+			roomNum = Int.random(in: 0..<10) == 0 ? 495 : roomNum
+			print("Wandering to \(roomNum)\n")
 			try? go(to: roomNum, quietly: true)
 		}
 	}
