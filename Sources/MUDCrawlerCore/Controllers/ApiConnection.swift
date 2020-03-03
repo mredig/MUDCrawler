@@ -202,7 +202,6 @@ class ApiConnection {
 	// FIXME: UNKNOWN RESULT TYPE
 	func submitProof(proof: Int, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
-			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("bc", isDirectory: true)
 			.appendingPathComponent("mine", isDirectory: true)
 
@@ -213,7 +212,6 @@ class ApiConnection {
 
 	func getLastProof(completion: @escaping (Result<LastProof, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
-			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("bc", isDirectory: true)
 			.appendingPathComponent("last_proof", isDirectory: true)
 
@@ -223,7 +221,6 @@ class ApiConnection {
 
 	func getBalance(completion: @escaping (Result<BasicResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
-			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("bc", isDirectory: true)
 			.appendingPathComponent("get_balance", isDirectory: true)
 
