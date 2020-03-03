@@ -755,8 +755,13 @@ class RoomController {
 		if info.items?.contains("golden snitch") == true {
 			jumpTake(item: "golden snitch")
 		}
-		if info.roomID < 500 && info.items?.contains("small treasure") == true {
-			jumpTake(item: "small treasure")
+
+		let desiredItems = Set(["small treasure", "shiny treasure", "treasure"])
+		for desiredItem in desiredItems {
+			if info.roomID < 500 && info.items?.contains(desiredItem) == true {
+				jumpTake(item: desiredItem)
+				break
+			}
 		}
 	}
 
