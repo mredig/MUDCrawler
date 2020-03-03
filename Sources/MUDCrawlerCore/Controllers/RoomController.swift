@@ -277,7 +277,7 @@ class RoomController {
 					self.logRoomInfo(roomInfo, movedInDirection: nil)
 					print(roomInfo)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error dropping item: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -297,7 +297,7 @@ class RoomController {
 					self.logRoomInfo(roomInfo, movedInDirection: nil)
 					print(roomInfo)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error selling item: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -324,7 +324,7 @@ class RoomController {
 							print("Mine in room \(id)")
 						}
 					case .failure(let error):
-						print("Error taking item: \(error)")
+						print("Error examining item: \(error)")
 						cdTime = self.cooldownFromError(error)
 					}
 					dateCompletion(cdTime)
@@ -347,7 +347,7 @@ class RoomController {
 						mineRoomID = id
 					}
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error examining well: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -377,7 +377,7 @@ class RoomController {
 					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
 					print(playerInfo)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error updating status: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -396,7 +396,7 @@ class RoomController {
 					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
 					print(playerInfo)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error equipping item: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -415,7 +415,7 @@ class RoomController {
 					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
 					print(playerInfo)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error unequipping item: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -434,7 +434,7 @@ class RoomController {
 					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
 					print(roomInfo)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error changing name: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -453,7 +453,7 @@ class RoomController {
 					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
 					print(roomInfo)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error praying: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -472,7 +472,7 @@ class RoomController {
 					cdTime = self.dateFromCooldownValue(playerResponse.cooldown)
 					print(playerResponse)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error ghosting item: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -491,7 +491,7 @@ class RoomController {
 					cdTime = self.dateFromCooldownValue(playerResponse.cooldown)
 					print(playerResponse)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error unghosting item: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -510,7 +510,7 @@ class RoomController {
 					cdTime = self.dateFromCooldownValue(playerResponse.cooldown)
 					print(playerResponse)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error transmogging item: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -541,7 +541,7 @@ class RoomController {
 					self.lastProofTime = Date()
 					print(lastProof)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error getting proof: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
@@ -602,7 +602,7 @@ class RoomController {
 					cdTime = self.dateFromCooldownValue(balanceInfo.cooldown)
 					print(balanceInfo)
 				case .failure(let error):
-					print("Error taking item: \(error)")
+					print("Error getting balance: \(error)")
 					cdTime = self.cooldownFromError(error)
 				}
 				dateCompletion(cdTime)
