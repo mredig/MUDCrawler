@@ -246,6 +246,26 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	/// adds an item take to the front of the queue, but doesn't wait for it to complete
+	func jumpTake(item: String) {
+		guard currentRoom != nil else { return }
+		commandQueue.jumpQueue { dateCompletion in
+			self.apiConnection.takeItem(item) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let roomInfo):
+					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					self.logRoomInfo(roomInfo, movedInDirection: nil)
+					print(roomInfo)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+	}
+
 	func drop(item: String) {
 		guard currentRoom != nil else { return }
 		commandQueue.addCommand { dateCompletion in
@@ -288,15 +308,43 @@ class RoomController {
 
 	func examine(entity: String) {
 		guard currentRoom != nil else { return }
+
+		if entity == "well" {
+			guard let newRoomID = examineWell() else { return }
+			print("Mine in room \(newRoomID)")
+		} else {
+			commandQueue.addCommand { dateCompletion in
+				self.apiConnection.examine(entity: entity) { result in
+					let cdTime: Date
+					switch result {
+					case .success(let examineResponse):
+						cdTime = self.dateFromCooldownValue(examineResponse.cooldown)
+						print(examineResponse)
+						if entity == "well", let id = self.getRoomID(from: examineResponse.description) {
+							print("Mine in room \(id)")
+						}
+					case .failure(let error):
+						print("Error taking item: \(error)")
+						cdTime = self.cooldownFromError(error)
+					}
+					dateCompletion(cdTime)
+				}
+			}
+			waitForCommandQueue()
+		}
+	}
+
+	func examineWell() -> Int? {
+		guard currentRoom != nil else { return nil }
+		var mineRoomID: Int?
 		commandQueue.addCommand { dateCompletion in
-			self.apiConnection.examine(entity: entity) { result in
+			self.apiConnection.examine(entity: "well") { result in
 				let cdTime: Date
 				switch result {
 				case .success(let examineResponse):
 					cdTime = self.dateFromCooldownValue(examineResponse.cooldown)
-					print(examineResponse)
-					if entity == "well", let id = self.getRoomID(from: examineResponse.description) {
-						print("Mine in room \(id)")
+					if let id = self.getRoomID(from: examineResponse.description) {
+						mineRoomID = id
 					}
 				case .failure(let error):
 					print("Error taking item: \(error)")
@@ -306,6 +354,7 @@ class RoomController {
 			}
 		}
 		waitForCommandQueue()
+		return mineRoomID
 	}
 
 	func getRoomID(from description: String) -> Int? {
@@ -502,18 +551,21 @@ class RoomController {
 	}
 
 	func mine() {
+		if lastProof == nil {
+			getLastProof()
+		}
 		guard let lastProof = lastProof else { return }
 		let coinminer = CoinMiner(lastProof: lastProof, iterations: 99999)
 
 		var proof: Int?
 
 		while proof == nil {
+			print("mining")
 			if let lastProofTime = lastProofTime, lastProofTime.addingTimeInterval(10) < Date() {
 				getLastProof()
 				coinminer.lastProof = self.lastProof ?? coinminer.lastProof
 			}
 			DispatchQueue.concurrentPerform(iterations: 4) { _ in
-				print("mining")
 				if let newProof = coinminer.mine() {
 					proof = newProof
 				}
@@ -653,38 +705,6 @@ class RoomController {
 		}
 	}
 
-	func testQueue() {
-		let directions: [Direction] = [.north, .south, .north, .south]
-
-		var previousRoom = currentRoom!
-		for direction in directions {
-			let nextRoomID: String?
-			if let nextID = rooms[previousRoom]?.connections[direction] {
-				nextRoomID = "\(nextID)"
-				previousRoom = nextID
-			} else {
-				nextRoomID = nil
-			}
-			commandQueue.addCommand { dateCompletion in
-				self.apiConnection.movePlayer(direction: direction, predictedRoom: nextRoomID) { result in
-					let cdTime: Date
-					switch result {
-					case .success(let roomInfo):
-						cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-						self.logRoomInfo(roomInfo, movedInDirection: direction)
-						print(roomInfo)
-					case .failure(let error):
-						print("Error moving player: \(error)")
-						cdTime = Date()
-					}
-					dateCompletion(cdTime)
-				}
-			}
-			print("added move to \(nextRoomID ?? "unknown")")
-		}
-		waitForCommandQueue()
-	}
-
 	// MARK: - logging
 	private func logRoomInfo(_ roomInfo: RoomResponse, movedInDirection direction: Direction?, dashed: Bool = false) {
 		let previousRoomID = currentRoom
@@ -730,6 +750,13 @@ class RoomController {
 		}
 		if (info.players?.count ?? 0) > 0 {
 			print("Room: \(room) players: \(info.players ?? [])")
+		}
+
+		if info.items?.contains("golden snitch") == true {
+			jumpTake(item: "golden snitch")
+		}
+		if info.roomID < 500 && info.items?.contains("small treasure") == true {
+			jumpTake(item: "small treasure")
 		}
 	}
 
