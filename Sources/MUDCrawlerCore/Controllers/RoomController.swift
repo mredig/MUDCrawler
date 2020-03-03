@@ -570,26 +570,51 @@ class RoomController {
 					proof = newProof
 				}
 			}
-		}
-
-		if let newProof = proof {
-			proof = newProof
-			commandQueue.addCommand { dateCompletion in
-				self.apiConnection.submitProof(proof: newProof) { result in
-					let cdTime: Date
-					switch result {
-					case .success(let submissionResult):
-						cdTime = self.dateFromCooldownValue(submissionResult.cooldown)
-						print(submissionResult)
-					case .failure(let error):
-						print("Error taking item: \(error)")
-						cdTime = self.cooldownFromError(error)
-					}
-					dateCompletion(cdTime)
-				}
+			if let foundProof = proof {
+				let success = submitProof(proof: foundProof)
+				proof = success ? proof : nil
 			}
-			waitForCommandQueue()
 		}
+	}
+
+	func autoMine() {
+		while true {
+			do {
+				recall()
+				try go(to: 55, quietly: true)
+				guard let mineRoomID = examineWell() else { continue }
+				print("Heading to room \(mineRoomID) for mining")
+				try go(to: mineRoomID, quietly: true)
+				mine()
+			} catch {
+				print("There was an error automining: \(error)")
+			}
+		}
+	}
+
+	private func submitProof(proof: Int) -> Bool {
+		var success = false
+		let sem = DispatchSemaphore(value: 0)
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.submitProof(proof: proof) { result in
+				let cdTime: Date
+				switch result {
+				case .success(let submissionResult):
+					cdTime = self.dateFromCooldownValue(submissionResult.cooldown)
+					print(submissionResult)
+					success = true
+				case .failure(let error):
+					print("Error submitting proof: \(error)")
+					cdTime = self.cooldownFromError(error)
+					success = false
+				}
+				sem.signal()
+				dateCompletion(cdTime)
+			}
+		}
+		sem.wait()
+//		waitForCommandQueue()
+		return success
 	}
 
 	func getBalance() {

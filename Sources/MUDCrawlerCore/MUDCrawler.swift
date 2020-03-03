@@ -45,6 +45,9 @@ public class MUDCrawler {
 		else if command == "draw" {
 			roomController.drawMap()
 		}
+		else if command == "automine" {
+			roomController.autoMine()
+		}
 		else if command.hasPrefix("take") {
 			takeItem(command: command)
 		}
