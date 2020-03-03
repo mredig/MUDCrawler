@@ -732,7 +732,7 @@ class RoomController {
 						buyDonut()
 					}
 				}
-				if (playerStatus?.gold ?? 0) < 4000 {
+				if (playerStatus?.gold ?? 0) < 4500 { // 4500 is a good starting value
 					gatherTreasure()
 					sellAllItems()
 					continue
