@@ -682,6 +682,9 @@ class RoomController {
 		rooms[room]?.title = info.title
 		rooms[room]?.description = info.description
 		rooms[room]?.items = info.items
+		if (info.items?.count ?? 0) > 0 {
+			print("Room: \(room) items: \(info.items ?? [])")
+		}
 		print("Room: \(room) players: \(info.players ?? [])")
 	}
 
