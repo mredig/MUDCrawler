@@ -97,7 +97,9 @@ public class MUDCrawler {
 		else if command == "mine" {
 			roomController.mine()
 		}
-
+		else if command == "balance" {
+			roomController.getBalance()
+		}
 		else if command == "founditems" {
 			roomController.foundItems()
 		}

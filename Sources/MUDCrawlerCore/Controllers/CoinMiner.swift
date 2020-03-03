@@ -42,7 +42,7 @@ class CoinMiner {
 
 	func mine() -> Int? {
 		for _ in 0..<iterations {
-			let testProof = Int.random(in: 0..<Int.max)
+			let testProof = Int(Int32.random(in: 0..<Int32.max))
 			let combined = combineProofs(testProof: testProof)
 			if validate(string: combined) {
 				return testProof

@@ -497,6 +497,25 @@ class RoomController {
 		}
 	}
 
+	func getBalance() {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.getBalance { result in
+				let cdTime: Date
+				switch result {
+				case .success(let balanceInfo):
+					cdTime = self.dateFromCooldownValue(balanceInfo.cooldown)
+					print(balanceInfo)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
 	// MARK: - Path calculation
 	/// Performs a breadth first search to get from start to destination
 	func shortestRoute(from startRoomID: Int, to destinationRoomID: Int) throws -> [PathElement<Direction>] {
