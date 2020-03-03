@@ -433,6 +433,64 @@ class RoomController {
 		roomsWithItems.forEach { print("Room \($0.key) has \($0.value.items ?? [])") }
 	}
 
+	// MARK: - Mining
+
+	private var lastProof: LastProof?
+	private var lastProofTime: Date?
+	func getLastProof() {
+		guard currentRoom != nil else { return }
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.getLastProof { result in
+				let cdTime: Date
+				switch result {
+				case .success(let lastProof):
+					cdTime = self.dateFromCooldownValue(lastProof.cooldown)
+					self.lastProof = lastProof
+					self.lastProofTime = Date()
+					print(lastProof)
+				case .failure(let error):
+					print("Error taking item: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
+	func mine() {
+		guard let lastProof = lastProof else { return }
+		let coinminer = CoinMiner(lastProof: lastProof, iterations: 9999)
+
+		var proof: Int?
+		while proof == nil {
+			print("mining")
+			if let lastProofTime = lastProofTime, lastProofTime.addingTimeInterval(10) < Date() {
+				getLastProof()
+				coinminer.lastProof = self.lastProof ?? coinminer.lastProof
+			}
+			if let newProof = coinminer.mine() {
+				proof = newProof
+				commandQueue.addCommand { dateCompletion in
+					self.apiConnection.submitProof(proof: newProof) { result in
+						let cdTime: Date
+						switch result {
+						case .success(let submissionResult):
+							cdTime = self.dateFromCooldownValue(submissionResult.cooldown)
+							print(submissionResult)
+						case .failure(let error):
+							print("Error taking item: \(error)")
+							cdTime = self.cooldownFromError(error)
+						}
+						dateCompletion(cdTime)
+					}
+				}
+				waitForCommandQueue()
+				break
+			}
+		}
+	}
+
 	// MARK: - Path calculation
 	/// Performs a breadth first search to get from start to destination
 	func shortestRoute(from startRoomID: Int, to destinationRoomID: Int) throws -> [PathElement<Direction>] {

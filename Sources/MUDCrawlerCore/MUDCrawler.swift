@@ -90,6 +90,14 @@ public class MUDCrawler {
 		else if command == "pray" {
 			roomController.pray()
 		}
+
+		else if command == "getproof" {
+			roomController.getLastProof()
+		}
+		else if command == "mine" {
+			roomController.mine()
+		}
+
 		else if command == "founditems" {
 			roomController.foundItems()
 		}
