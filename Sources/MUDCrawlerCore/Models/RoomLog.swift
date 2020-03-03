@@ -20,16 +20,23 @@ class RoomLog: Codable, Equatable {
 	let location: RoomLocation
 	var connections: [Direction: Int]
 	var unknownConnections = Set<Direction>()
-	let elevation: Double?
+	let elevation: Double
 	let terrain: String?
 	var items: [String]?
 	var messages: Set<String>
+
+	var isTrap: Bool {
+		terrain == "TRAP"
+	}
+	var isCave: Bool {
+		terrain == "CAVE"
+	}
 
 	init(id: Int, title: String, description: String, location: RoomLocation, elevation: Double?, terrain: String?, items: [String]?, messages: Set<String>) {
 		self.id = id
 		self.location = location
 		connections = [Direction: Int]()
-		self.elevation = elevation
+		self.elevation = elevation ?? 0
 		self.terrain = terrain
 		self.items = items
 		self.title = title
