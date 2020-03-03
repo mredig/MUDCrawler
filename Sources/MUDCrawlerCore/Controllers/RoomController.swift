@@ -49,6 +49,46 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	func warp() {
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.warp { result in
+				let cdTime: Date
+				switch result {
+				case .success(let roomInfo):
+					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					self.logRoomInfo(roomInfo, movedInDirection: nil)
+					print(roomInfo)
+				case .failure(let error):
+					print("Error initing player: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
+	func recall() {
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.recall { result in
+				let cdTime: Date
+				switch result {
+				case .success(let roomInfo):
+					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					self.logRoomInfo(roomInfo, movedInDirection: nil)
+					print(roomInfo)
+				case .failure(let error):
+					print("Error initing player: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
+
+
 	/// adds a move command to the queue and waits for the cooldown to finish
 	func move(in direction: Direction, completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
 		guard let currentRoom = currentRoom else { return }
@@ -685,10 +725,13 @@ class RoomController {
 		if (info.items?.count ?? 0) > 0 {
 			print("Room: \(room) items: \(info.items ?? [])")
 		}
-		print("Room: \(room) players: \(info.players ?? [])")
+		if (info.players?.count ?? 0) > 0 {
+			print("Room: \(room) players: \(info.players ?? [])")
+		}
 	}
 
 	private func connect(previousRoom: RoomLog, newRoom: RoomLog, direction: Direction) {
+		guard previousRoom != newRoom else { return }
 		// double check direction and positions match (this might not be necessary, but just verifying)
 		switch direction {
 		case .north:

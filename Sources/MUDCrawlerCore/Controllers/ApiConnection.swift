@@ -76,6 +76,24 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
+	func warp(completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("warp", isDirectory: true)
+
+		let request = getRequest(from: url, method: .post)
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
+	func recall(completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("recall", isDirectory: true)
+
+		let request = getRequest(from: url, method: .post)
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
 	func takeItem(_ item: String, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
