@@ -8,6 +8,7 @@
 import Foundation
 import Files
 import NetworkHandler
+import LS8Core
 
 class RoomController {
 	enum RoomControllerError: Error {
@@ -294,7 +295,7 @@ class RoomController {
 				case .success(let examineResponse):
 					cdTime = self.dateFromCooldownValue(examineResponse.cooldown)
 					print(examineResponse)
-					if let id = self.getRoomID(from: examineResponse.description) {
+					if entity == "well", let id = self.getRoomID(from: examineResponse.description) {
 						print("Mine in room \(id)")
 					}
 				case .failure(let error):
@@ -308,11 +309,13 @@ class RoomController {
 	}
 
 	func getRoomID(from description: String) -> Int? {
-		let values = description.split(separator: "\n").map { String($0) }
-		let ints = values.map { UInt8($0, radix: 2) }.compactMap { $0 }
-		let chars = ints.filter { $0 > 47 && $0 < 58 }.compactMap { Unicode.Scalar($0) }.compactMap { Character($0) }
-		let str = String(chars)
-		return Int(str)
+		let ls8 = LS8Cpu()
+		let data = DataConvert.binStringToData(description)
+		ls8.load(program: data)
+		guard let trail = ls8.run().split(separator: " ").last else { return nil }
+		let strNum = String(trail)
+
+		return Int(strNum)
 	}
 
 	func playerStatus() {

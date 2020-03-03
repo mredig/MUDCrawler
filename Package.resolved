@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "LS8Swift",
+        "repositoryURL": "https://github.com/mredig/LS8Swift.git",
+        "state": {
+          "branch": null,
+          "revision": "6a3199d561b95b4503e8e9e550010a2b1e5461d4",
+          "version": "0.0.2"
+        }
+      },
+      {
         "package": "NetworkHandler",
         "repositoryURL": "https://github.com/mredig/NetworkHandler.git",
         "state": {

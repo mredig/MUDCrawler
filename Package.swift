@@ -18,7 +18,8 @@ let package = Package(
 		// Dependencies declare other packages that this package depends on.
 		// .package(url: /* package url */, from: "1.0.0"),
 		.package(url: "https://github.com/johnsundell/files.git", from: "4.0.0"),
-		.package(url: "https://github.com/mredig/NetworkHandler.git", from: "0.9.7")
+		.package(url: "https://github.com/mredig/NetworkHandler.git", from: "0.9.7"),
+		.package(url: "https://github.com/mredig/LS8Swift.git", from: "0.0.1")
 	],
 	targets: [
 		// Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -26,7 +27,8 @@ let package = Package(
 		.target(name: "MUDCrawlerCore",
 				dependencies: [
 					"Files",
-					"NetworkHandler"
+					"NetworkHandler",
+					"LS8Core"
 		]),
 		.target(
 			name: "MUDCrawler",
