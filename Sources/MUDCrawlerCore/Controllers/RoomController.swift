@@ -460,34 +460,40 @@ class RoomController {
 
 	func mine() {
 		guard let lastProof = lastProof else { return }
-		let coinminer = CoinMiner(lastProof: lastProof, iterations: 9999)
+		let coinminer = CoinMiner(lastProof: lastProof, iterations: 99999)
 
 		var proof: Int?
+
 		while proof == nil {
-			print("mining")
 			if let lastProofTime = lastProofTime, lastProofTime.addingTimeInterval(10) < Date() {
 				getLastProof()
 				coinminer.lastProof = self.lastProof ?? coinminer.lastProof
 			}
-			if let newProof = coinminer.mine() {
-				proof = newProof
-				commandQueue.addCommand { dateCompletion in
-					self.apiConnection.submitProof(proof: newProof) { result in
-						let cdTime: Date
-						switch result {
-						case .success(let submissionResult):
-							cdTime = self.dateFromCooldownValue(submissionResult.cooldown)
-							print(submissionResult)
-						case .failure(let error):
-							print("Error taking item: \(error)")
-							cdTime = self.cooldownFromError(error)
-						}
-						dateCompletion(cdTime)
-					}
+			DispatchQueue.concurrentPerform(iterations: 4) { _ in
+				print("mining")
+				if let newProof = coinminer.mine() {
+					proof = newProof
 				}
-				waitForCommandQueue()
-				break
 			}
+		}
+
+		if let newProof = proof {
+			proof = newProof
+			commandQueue.addCommand { dateCompletion in
+				self.apiConnection.submitProof(proof: newProof) { result in
+					let cdTime: Date
+					switch result {
+					case .success(let submissionResult):
+						cdTime = self.dateFromCooldownValue(submissionResult.cooldown)
+						print(submissionResult)
+					case .failure(let error):
+						print("Error taking item: \(error)")
+						cdTime = self.cooldownFromError(error)
+					}
+					dateCompletion(cdTime)
+				}
+			}
+			waitForCommandQueue()
 		}
 	}
 

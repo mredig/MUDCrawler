@@ -18,3 +18,13 @@ struct LastProof: ServerResponse {
 	let messages: [String]
 	let errors: [String]
 }
+
+struct ProofResponse: ServerResponse {
+	let index: Int
+	let transactions: String
+	let proof: Int
+	let previousHash: String
+	let cooldown: Double
+	let messages: [String]
+	let errors: [String]
+}

@@ -1,5 +1,4 @@
 import XCTest
-@testable import MUDCrawlerCore
 
 final class MUDCrawlerTests: XCTestCase {
     func testExample() {

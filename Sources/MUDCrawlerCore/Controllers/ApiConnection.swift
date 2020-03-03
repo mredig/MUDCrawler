@@ -200,7 +200,7 @@ class ApiConnection {
 
 	// MARK: - lambda coin stuff
 	// FIXME: UNKNOWN RESULT TYPE
-	func submitProof(proof: Int, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+	func submitProof(proof: Int, completion: @escaping (Result<ProofResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("bc", isDirectory: true)
 			.appendingPathComponent("mine", isDirectory: true)
