@@ -220,6 +220,26 @@ class RoomController {
 						dateCompletion(cdTime)
 					}
 				}
+			case .warp(direction: let direction, roomID: let roomID):
+				commandQueue.addCommand { dateCompletion in
+					self.apiConnection.warp { result in
+						let cdTime: Date
+						switch result {
+						case .success(let roomInfo):
+							cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+							if quietly {
+								print("Entered room \(roomInfo.roomID)")
+							} else {
+								print(roomInfo)
+							}
+							self.logRoomInfo(roomInfo, movedInDirection: nil)
+						case .failure(let error):
+							print("Error initing player: \(error)")
+							cdTime = self.cooldownFromError(error)
+						}
+						dateCompletion(cdTime)
+					}
+				}
 			}
 			print("Added \(step) to queue.")
 		}
@@ -610,18 +630,15 @@ class RoomController {
 	}
 
 	func snitchMining() {
-		guard let currentRoom = currentRoom else { return }
-		if currentRoom < 500 {
-			warp()
-		}
+		guard currentRoom != nil else { return }
 		while true {
 			do {
-				try go(to: 555, quietly: true)
+				try go(to: 55, quietly: true)
+				warp()
 				guard let mineRoomID = examineWell() else { continue }
 				print("Heading to room \(mineRoomID) for mining")
 				try go(to: mineRoomID, quietly: true)
-				recall()
-				warp()
+//				recall()
 			} catch {
 				print("There was an error autowarpmining: \(error)")
 			}
@@ -697,6 +714,16 @@ class RoomController {
 				newPath.append(PathElement(direction: direction, roomID: connectedRoomID))
 				queue.enqueue(newPath)
 			}
+			var warpRoom: Int
+			switch endRoom.id {
+			case 0...499:
+				warpRoom = endRoom.id + 500
+			default:
+				warpRoom = endRoom.id - 500
+			}
+			var newPath = path
+			newPath.append(PathElement(direction: .warp, roomID: warpRoom))
+			queue.enqueue(newPath)
 		}
 		throw RoomControllerError.pathNotFound
 	}
@@ -839,6 +866,8 @@ class RoomController {
 		case .east:
 			precondition(previousRoom.location.x + 1 == newRoom.location.x)
 			precondition(previousRoom.location.y == newRoom.location.y)
+		case .warp:
+			return
 		}
 
 		connectOneWay(startingIn: previousRoom, endingIn: newRoom, direction: direction)
