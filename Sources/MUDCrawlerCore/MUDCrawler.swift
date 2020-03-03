@@ -75,7 +75,7 @@ public class MUDCrawler {
 		else if command.hasPrefix("give") {
 			ghostGive(command: command)
 		}
-		else if command.hasPrefix("take") {
+		else if command.hasPrefix("receive") {
 			ghostTake(command: command)
 		}
 		else if command.hasPrefix("newname") {

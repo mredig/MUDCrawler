@@ -166,8 +166,7 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
-	// FIXME: UNKNOWN RESULT TYPE
-	func ghostCarry(item: String, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+	func ghostCarry(item: String, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("carry", isDirectory: true)
@@ -177,8 +176,7 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
-	// FIXME: UNKNOWN RESULT TYPE
-	func ghostReceive(item: String, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+	func ghostReceive(item: String, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("receive", isDirectory: true)
@@ -188,7 +186,7 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
-	func transmog(item: String, completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
+	func transmog(item: String, completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)
 			.appendingPathComponent("transmogrify", isDirectory: true)
