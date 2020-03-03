@@ -100,8 +100,6 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
-
-
 	/// adds a move command to the queue and waits for the cooldown to finish
 	func move(in direction: Direction, completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
 		guard let currentRoom = currentRoom else { return }
@@ -375,6 +373,16 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	func gatherTreasure() {
+
+		while (playerStatus?.capacity ?? 1) < 0.66 {
+			getPlayerStatus()
+
+			let roomNum = Int.random(in: 200...499)
+			print("Wandering to \(roomNum)")
+			try? go(to: roomNum, quietly: true)
+		}
+	}
 
 	func sell(item: String, confirm: Bool) {
 		guard currentRoom != nil else { return }
@@ -394,6 +402,33 @@ class RoomController {
 			}
 		}
 		waitForCommandQueue()
+	}
+
+	func sellAllItems() {
+		guard currentRoom != nil else { return }
+		getPlayerStatus()
+		guard let playerStatus = playerStatus, let items = playerStatus.inventory else { return }
+		guard items.count > 0 else { return }
+		try? go(to: 1, quietly: true)
+		for item in items {
+			commandQueue.addCommand { dateCompletion in
+				self.apiConnection.sellItem(item, confirm: true) { result in
+					let cdTime: Date
+					switch result {
+					case .success(let roomInfo):
+						cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+						self.logRoomInfo(roomInfo, movedInDirection: nil)
+						print(roomInfo)
+					case .failure(let error):
+						print("Error selling item: \(error)")
+						cdTime = self.cooldownFromError(error)
+					}
+					dateCompletion(cdTime)
+				}
+			}
+		}
+		waitForCommandQueue()
+		getPlayerStatus()
 	}
 
 	func examine(entity: String) {
@@ -686,12 +721,26 @@ class RoomController {
 
 	func snitchMining() {
 		guard currentRoom != nil else { return }
+		getPlayerStatus()
 		while true {
 			do {
+				if (playerStatus?.gold ?? 0) > 2000 {
+					if sugarRushExpiration == nil {
+						buyDonut()
+					} else if let exp = sugarRushExpiration, Date() > exp {
+						buyDonut()
+					}
+				}
+				if (playerStatus?.gold ?? 0) < 4000 {
+					gatherTreasure()
+					sellAllItems()
+					continue
+				}
 				try go(to: 555, quietly: true)
 				guard let mineRoomID = examineWell() else { continue }
 				print("\nHeading to room \(mineRoomID) for snitching!\n")
 				try go(to: mineRoomID, quietly: true)
+				sellAllItems()
 //				recall()
 			} catch {
 				print("There was an error autowarpmining: \(error)")
