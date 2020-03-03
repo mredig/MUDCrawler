@@ -19,4 +19,8 @@ public class Queue<T> {
 	public func dequeue() -> T? {
 		storage.removeFromTail()
 	}
+
+	public func jumpQueue(_ value: T) {
+		storage.addToTail(value: value)
+	}
 }

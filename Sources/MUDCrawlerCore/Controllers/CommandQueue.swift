@@ -61,4 +61,8 @@ class CommandQueue {
 		command(updateCooldown)
 		return true
 	}
+
+	func jumpQueue(_ command: @escaping QueuedCommand) {
+		commands.jumpQueue(command)
+	}
 }
