@@ -8,7 +8,6 @@
 import Foundation
 import CryptoKit
 
-@available(OSX 10.15, *)
 class CoinMiner {
 
 	var lastProof: LastProof {
@@ -38,7 +37,6 @@ class CoinMiner {
 	func validate(string: String) -> Bool {
 		guard let data = string.data(using: .utf8) else { return false }
 		let hashStr = SHA256.hash(data: data).map { String(format: "%02hhx", $0) }.joined()
-		print(hashStr)
 		return hashStr.hasPrefix(difficultyStr)
 	}
 
