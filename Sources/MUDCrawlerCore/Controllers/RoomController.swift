@@ -762,14 +762,24 @@ class RoomController {
 
 	// MARK: - Visual
 	func drawMap() {
-		let size = rooms.reduce(RoomLocation(x: 0, y: 0)) {
+		drawMap(world: 0)
+		drawMap(world: 1)
+	}
+
+	func drawMap(world: Int) {
+		let worldRange = (500 * world)..<(500 * (world + 1))
+		let worldRooms = rooms.filter { worldRange.contains($0.key) }
+
+		print("\nWorld \(world + 1)")
+
+		let size = worldRooms.reduce(RoomLocation(x: 0, y: 0)) {
 			RoomLocation(x: max($0.x, $1.value.location.x), y: max($0.y, $1.value.location.y))
 		}
 
 		let row = (0...size.x).map { _ in " " }
 		var matrix = (0...size.y).map { _ in row }
 
-		for (_, room) in rooms {
+		for (_, room) in worldRooms {
 			let location = room.location
 			var char = room.unknownConnections.isEmpty ? "+" : "?"
 			char = room.id == 0 ? "O" : char

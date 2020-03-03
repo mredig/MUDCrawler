@@ -146,5 +146,4 @@ let descs = descDict.map { ($0.value, $0.key) }.sorted { (a, b) -> Bool in
 for desc in descs {
 	print("\(desc.0): ")
 	print("\t\(desc.1)\n")
-//	print(desc)
 }
