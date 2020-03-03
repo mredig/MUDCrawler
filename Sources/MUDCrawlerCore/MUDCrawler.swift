@@ -48,6 +48,12 @@ public class MUDCrawler {
 		else if command == "automine" {
 			roomController.autoMine()
 		}
+		else if command == "snitchmine" {
+			roomController.snitchMining()
+		}
+		else if command == "wander" {
+			roomController.wanderInDarkWorld()
+		}
 		else if command.hasPrefix("take") {
 			takeItem(command: command)
 		}
@@ -144,15 +150,8 @@ public class MUDCrawler {
 	}
 
 	func sellItem(command: String) {
-		var item = command.replacingOccurrences(of: "^sell ", with: "", options: .regularExpression, range: nil)
-		let confirm: Bool
-		if command.hasSuffix(" y") {
-			confirm = true
-			item = item.replacingOccurrences(of: " y$", with: "", options: .regularExpression, range: nil)
-		} else {
-			confirm = false
-		}
-		roomController.sell(item: item, confirm: confirm)
+		let item = command.replacingOccurrences(of: "^sell ", with: "", options: .regularExpression, range: nil)
+		roomController.sell(item: item, confirm: true)
 	}
 
 	func examine(command: String) {

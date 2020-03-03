@@ -226,6 +226,22 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	func wanderInDarkWorld() {
+		guard var currentRoom = currentRoom else { return }
+		if currentRoom < 500 {
+			warp()
+		}
+
+		while true {
+			let randomRoom = Int.random(in: 500..<1000)
+			do {
+				try go(to: randomRoom, quietly: true)
+			} catch {
+				print("Error wandering to room:\(randomRoom)")
+			}
+		}
+	}
+
 	func take(item: String) {
 		guard currentRoom != nil else { return }
 		commandQueue.addCommand { dateCompletion in
@@ -586,15 +602,34 @@ class RoomController {
 				print("Heading to room \(mineRoomID) for mining")
 				try go(to: mineRoomID, quietly: true)
 				mine()
+				getBalance()
 			} catch {
 				print("There was an error automining: \(error)")
 			}
 		}
 	}
 
+	func snitchMining() {
+		guard let currentRoom = currentRoom else { return }
+		if currentRoom < 500 {
+			warp()
+		}
+		while true {
+			do {
+				try go(to: 555, quietly: true)
+				guard let mineRoomID = examineWell() else { continue }
+				print("Heading to room \(mineRoomID) for mining")
+				try go(to: mineRoomID, quietly: true)
+				recall()
+				warp()
+			} catch {
+				print("There was an error autowarpmining: \(error)")
+			}
+		}
+	}
+
 	private func submitProof(proof: Int) -> Bool {
 		var success = false
-		let sem = DispatchSemaphore(value: 0)
 		commandQueue.addCommand { dateCompletion in
 			self.apiConnection.submitProof(proof: proof) { result in
 				let cdTime: Date
@@ -608,12 +643,10 @@ class RoomController {
 					cdTime = self.cooldownFromError(error)
 					success = false
 				}
-				sem.signal()
 				dateCompletion(cdTime)
 			}
 		}
-		sem.wait()
-//		waitForCommandQueue()
+		waitForCommandQueue()
 		return success
 	}
 
