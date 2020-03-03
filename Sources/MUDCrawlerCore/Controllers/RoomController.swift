@@ -16,6 +16,12 @@ class RoomController {
 		case pathNotFound
 	}
 
+	private(set) var playerStatus: PlayerResponse? {
+		didSet {
+			updateSugarRushExp()
+		}
+	}
+	private(set) var sugarRushExpiration: Date?
 	private(set) var rooms = [Int: RoomLog]()
 	private(set) var currentRoom: Int?
 	private let apiConnection = ApiConnection(token: apikey)
@@ -27,6 +33,12 @@ class RoomController {
 	init() {
 		simpleLoadFromPersistentStore()
 		commandQueue.start()
+	}
+
+	private func updateSugarRushExp() {
+		guard let playerStatus = playerStatus else { return }
+		guard let sugRush = playerStatus.sugarRush else { return }
+		sugarRushExpiration = Date(timeIntervalSinceNow: sugRush - 20)
 	}
 
 	// MARK: - API Directives
@@ -267,7 +279,7 @@ class RoomController {
 	}
 
 	func wanderInDarkWorld() {
-		guard var currentRoom = currentRoom else { return }
+		guard let currentRoom = currentRoom else { return }
 		if currentRoom < 500 {
 			warp()
 		}
@@ -445,7 +457,7 @@ class RoomController {
 		return Int(strNum)
 	}
 
-	func playerStatus() {
+	func getPlayerStatus() {
 		guard currentRoom != nil else { return }
 		commandQueue.addCommand { dateCompletion in
 			self.apiConnection.playerStatus { result in
@@ -453,6 +465,7 @@ class RoomController {
 				switch result {
 				case .success(let playerInfo):
 					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
+					self.playerStatus = playerInfo
 					print(playerInfo)
 				case .failure(let error):
 					print("Error updating status: \(error)")
@@ -889,7 +902,7 @@ class RoomController {
 			jumpTake(item: "golden snitch")
 		}
 
-		let desiredItems = Set(["shiny treasure", "treasure"])
+		let desiredItems = Set(["tiny treasure", "small treasure", "shiny treasure", "treasure"])
 		for desiredItem in desiredItems {
 			if info.roomID < 500 && info.items?.contains(desiredItem) == true {
 				jumpTake(item: desiredItem)

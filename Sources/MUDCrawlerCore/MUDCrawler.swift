@@ -70,7 +70,7 @@ public class MUDCrawler {
 			sellItem(command: command)
 		}
 		else if command == "status" {
-			roomController.playerStatus()
+			roomController.getPlayerStatus()
 		}
 		else if command.hasPrefix("move") {
 			move(command: command)
