@@ -36,7 +36,8 @@ class CoinMiner {
 
 	func validate(string: String) -> Bool {
 		guard let data = string.data(using: .utf8) else { return false }
-		let hashStr = SHA256.hash(data: data).map { String(format: "%02hhx", $0) }.joined()
+		var hashStr = SHA256.hash(data: data).description
+		hashStr.removeFirst(15)
 		return hashStr.hasPrefix(difficultyStr)
 	}
 
