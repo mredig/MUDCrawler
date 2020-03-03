@@ -8,6 +8,6 @@
 import Foundation
 import MUDCrawlerCore
 
-let test = MUDCrawler()
+let crawler = MUDCrawler()
 
-test.start()
+crawler.start()
