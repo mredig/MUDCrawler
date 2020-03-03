@@ -124,6 +124,16 @@ class ApiConnection {
 		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
 	}
 
+	func buyDonut(completion: @escaping (Result<RoomResponse, NetworkError>) -> Void) {
+		let url = baseURL.appendingPathComponent("api", isDirectory: true)
+			.appendingPathComponent("adv", isDirectory: true)
+			.appendingPathComponent("buy", isDirectory: true)
+
+		var request = getRequest(from: url, method: .post)
+		request.encodeData(ConfirmingItem(name: "donut", confirm: "yes"))
+		NetworkHandler.default.transferMahCodableDatas(with: request, completion: completion)
+	}
+
 	func playerStatus(completion: @escaping (Result<PlayerResponse, NetworkError>) -> Void) {
 		let url = baseURL.appendingPathComponent("api", isDirectory: true)
 			.appendingPathComponent("adv", isDirectory: true)

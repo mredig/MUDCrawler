@@ -14,6 +14,7 @@ struct PlayerResponse: ServerResponse {
 	let strength: Int
 	let speed: Int
 	let gold: Int
+	let sugarRush: Double?
 	let bodywear: String?
 	let footwear: String?
 	let inventory: [String]?
@@ -22,4 +23,8 @@ struct PlayerResponse: ServerResponse {
 	let hasMined: Bool
 	let errors: [String]
 	let messages: [String]
+
+	var capacity: Double {
+		Double(encumbrance) / Double(strength)
+	}
 }

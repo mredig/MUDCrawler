@@ -63,6 +63,9 @@ public class MUDCrawler {
 		else if command.hasPrefix("examine") {
 			examine(command: command)
 		}
+		else if command.hasPrefix("buydonut") {
+			roomController.buyDonut()
+		}
 		else if command.hasPrefix("sell") {
 			sellItem(command: command)
 		}

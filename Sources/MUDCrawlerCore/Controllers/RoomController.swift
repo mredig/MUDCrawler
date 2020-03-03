@@ -342,6 +342,28 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
+	func buyDonut() {
+		guard currentRoom != nil else { return }
+		try? go(to: 15, quietly: true)
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.buyDonut { result in
+				let cdTime: Date
+				switch result {
+				case .success(let roomInfo):
+					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
+					self.logRoomInfo(roomInfo, movedInDirection: nil)
+					print(roomInfo)
+				case .failure(let error):
+					print("Error selling item: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+	}
+
+
 	func sell(item: String, confirm: Bool) {
 		guard currentRoom != nil else { return }
 		commandQueue.addCommand { dateCompletion in
