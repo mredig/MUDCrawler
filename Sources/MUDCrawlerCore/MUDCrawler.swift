@@ -37,10 +37,7 @@ public class MUDCrawler {
 		}
 		else if directions.contains(command) {
 			guard let direction = Direction(rawValue: command) else { return }
-			roomController.move(in: direction)
-		}
-		else if command == "test" {
-			roomController.testQueue()
+			roomController.fly(in: direction)
 		}
 		else if command.hasPrefix("go ") {
 			gotoRoom(command: command)
@@ -63,8 +60,8 @@ public class MUDCrawler {
 		else if command == "status" {
 			roomController.playerStatus()
 		}
-		else if command.hasPrefix("fly") {
-			fly(command: command)
+		else if command.hasPrefix("move") {
+			move(command: command)
 		}
 		else if command.hasPrefix("equip") {
 			equip(command: command)
@@ -182,11 +179,11 @@ public class MUDCrawler {
 		roomController.unequip(item: gear)
 	}
 
-	func fly(command: String) {
-		let directionRaw = command.replacingOccurrences(of: "^fly ", with: "", options: .regularExpression, range: nil)
+	func move(command: String) {
+		let directionRaw = command.replacingOccurrences(of: "^move ", with: "", options: .regularExpression, range: nil)
 		guard let direction = Direction(rawValue: directionRaw) else { return }
 
-		roomController.fly(in: direction)
+		roomController.move(in: direction)
 	}
 
 	func distance(command: String) {
