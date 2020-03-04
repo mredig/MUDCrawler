@@ -275,22 +275,6 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
-	func wanderInDarkWorld() {
-		guard let currentRoom = currentRoom else { return }
-		if currentRoom < 500 {
-			warp()
-		}
-
-		while true {
-			let randomRoom = Int.random(in: 500..<1000)
-			do {
-				try go(to: randomRoom, quietly: true)
-			} catch {
-				print("Error wandering to room:\(randomRoom)")
-			}
-		}
-	}
-
 	func take(item: String) {
 		guard currentRoom != nil else { return }
 		commandQueue.addCommand { dateCompletion in
@@ -719,35 +703,6 @@ class RoomController {
 		}
 	}
 
-	func snitchMining() {
-		guard currentRoom != nil else { return }
-		getPlayerStatus()
-		while true {
-			do {
-				if (playerStatus?.gold ?? 0) > 2000 {
-					if sugarRushExpiration == nil {
-						buyDonut()
-					} else if let exp = sugarRushExpiration, Date() > exp {
-						buyDonut()
-					}
-				}
-				if (playerStatus?.gold ?? 0) < 4500 { // 4500 is a good starting value
-					gatherTreasure()
-					sellAllItems()
-					continue
-				}
-				try go(to: 555, quietly: true)
-				guard let mineRoomID = examineWell() else { continue }
-				print("\nHeading to room \(mineRoomID) for snitching!\n")
-				try go(to: mineRoomID, quietly: true)
-				sellAllItems()
-//				recall()
-			} catch {
-				print("There was an error autowarpmining: \(error)")
-			}
-		}
-	}
-
 	private func submitProof(proof: Int) -> Bool {
 		var success = false
 		commandQueue.addCommand { dateCompletion in
@@ -788,6 +743,53 @@ class RoomController {
 		}
 		waitForCommandQueue()
 	}
+
+
+	func snitchMining() {
+		guard currentRoom != nil else { return }
+		getPlayerStatus()
+		while true {
+			do {
+				if (playerStatus?.gold ?? 0) > 2000 {
+					if sugarRushExpiration == nil {
+						buyDonut()
+					} else if let exp = sugarRushExpiration, Date() > exp {
+						buyDonut()
+					}
+				}
+				if (playerStatus?.gold ?? 0) < 4500 { // 4500 is a good starting value
+					gatherTreasure()
+					sellAllItems()
+					continue
+				}
+				try go(to: 555, quietly: true)
+				guard let mineRoomID = examineWell() else { continue }
+				print("\nHeading to room \(mineRoomID) for snitching!\n")
+				try go(to: mineRoomID, quietly: true)
+				sellAllItems()
+				//				recall()
+			} catch {
+				print("There was an error autowarpmining: \(error)")
+			}
+		}
+	}
+
+	func wanderInDarkWorld() {
+		guard let currentRoom = currentRoom else { return }
+		if currentRoom < 500 {
+			warp()
+		}
+
+		while true {
+			let randomRoom = Int.random(in: 500..<1000)
+			do {
+				try go(to: randomRoom, quietly: true)
+			} catch {
+				print("Error wandering to room:\(randomRoom)")
+			}
+		}
+	}
+
 
 	// MARK: - Path calculation
 	/// Performs a breadth first search to get from start to destination
