@@ -199,18 +199,29 @@ public class MUDCrawler {
 
 	func distance(command: String) {
 		let roomIDStr = command.replacingOccurrences(of: "^dist ", with: "", options: .regularExpression, range: nil)
-		guard let currentRoom = roomController.currentRoom else {
-			print("No current room")
-			return
-		}
-		guard let roomID = Int(roomIDStr), let path = try? roomController.shortestRoute(from: currentRoom, to: roomID) else {
+		let rooms = roomIDStr.split(separator: " ").compactMap { Int($0) }
+		let startRoom: Int
+		let endRoom: Int
+
+		if rooms.count == 1 {
+			guard let currentRoom = roomController.currentRoom else {
+				print("No current room")
+				return
+			}
+			startRoom = currentRoom
+			endRoom = rooms[0]
+		} else if rooms.count == 2 {
+			startRoom = rooms[0]
+			endRoom = rooms[1]
+		} else {
 			print("Path or room doesn't exist")
 			return
 		}
-		let rooms = path.map { $0.roomID }.map { String($0) }.joined(separator: " -> ")
-		let directions = path.compactMap { $0.direction.rawValue.first }.map { String($0) }.joined(separator: ", ")
-		print(rooms)
-		print(directions)
+		let oldPath = try! roomController.shortestRoute(from: startRoom, to: endRoom)
+		let oldRooms = oldPath.map { $0.roomID }.map { String($0) }.joined(separator: " -> ")
+		print(oldRooms)
+		let newPath = try! roomController.shortestRoutes(from: startRoom, to: endRoom)
+		print(newPath)
 	}
 
 	func ghostGive(command: String) {

@@ -165,8 +165,7 @@ class RoomController {
 		guard let currentRoom = currentRoom else { return }
 		guard rooms[roomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: roomID) }
 
-		let path = try shortestRoute(from: currentRoom, to: roomID)
-		let movements = path.poweredUp(rooms: rooms)
+		let movements = try shortestRoutes(from: currentRoom, to: roomID)
 
 		for step in movements {
 			switch step {
@@ -792,6 +791,7 @@ class RoomController {
 
 	// MARK: - Path calculation
 	/// Performs a breadth first search to get from start to destination
+	@available(*, deprecated, message: "Use `shortestRoutes` instead.")
 	func shortestRoute(from startRoomID: Int, to destinationRoomID: Int) throws -> [PathElement<Direction>] {
 		guard rooms[startRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: startRoomID) }
 		guard rooms[destinationRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: destinationRoomID) }
@@ -837,6 +837,64 @@ class RoomController {
 			queue.enqueue(newPath)
 		}
 		throw RoomControllerError.pathNotFound
+	}
+
+	/// Instead of just a breadth first search, performs a breadth first traversal, comparing potential paths for the fastest one.
+	func shortestRoutes(from startRoomID: Int, to destinationRoomID: Int) throws -> [MovementType] {
+		guard rooms[startRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: startRoomID) }
+		guard rooms[destinationRoomID] != nil else { throw RoomControllerError.roomDoesntExist(roomID: destinationRoomID) }
+
+		let queue = Queue<[PathElement<Direction?>]>()
+		queue.enqueue([PathElement(direction: nil, roomID: startRoomID)])
+		var visited = Set<Int>()
+
+		var paths = [(cost: Double, path: [MovementType])]()
+
+		while queue.count > 0 {
+			guard let path = queue.dequeue() else { continue }
+			guard let lastPathElement = path.last else { continue }
+			let endRoomID = lastPathElement.roomID
+			if endRoomID == destinationRoomID {
+				let fullPath: [PathElement<Direction>] = path.compactMap {
+					guard let direction = $0.direction else { return nil }
+					return PathElement(direction: direction, roomID: $0.roomID)
+				}
+				let movementPath = fullPath.poweredUp(rooms: rooms)
+				let cost = movementPath.totalApproxCost(rooms: rooms)
+
+				paths.append((cost, movementPath))
+				continue
+			}
+			guard !visited.contains(endRoomID) else { continue }
+			visited.insert(endRoomID)
+			guard let endRoom = rooms[endRoomID] else { continue }
+			for (direction, connectedRoomID) in endRoom.connections {
+				var newPath = path
+				newPath.append(PathElement(direction: direction, roomID: connectedRoomID))
+				queue.enqueue(newPath)
+			}
+			// add warp room to shortest path
+			var warpRoom: Int
+			switch endRoom.id {
+			case 0...499:
+				warpRoom = endRoom.id + 500
+			default:
+				warpRoom = endRoom.id - 500
+			}
+			var newPath = path
+			newPath.append(PathElement(direction: .warp, roomID: warpRoom))
+			queue.enqueue(newPath)
+
+			// add recall room to shortest path
+			guard path.last?.roomID != 0 else { continue }
+			newPath = path
+			newPath.append(PathElement(direction: .recall, roomID: 0))
+			queue.enqueue(newPath)
+		}
+
+		paths.sort { $0.cost < $1.cost }
+//		paths.forEach { print($0) }
+		return paths.first?.path ?? []
 	}
 
 	func nearestUnexplored(from startRoomID: Int) throws -> [PathElement<Direction>] {
