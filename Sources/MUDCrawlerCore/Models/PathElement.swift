@@ -69,6 +69,9 @@ enum MovementType: CustomDebugStringConvertible {
 			if room.isCave {
 				baseCost += 10
 			}
+			if room.isTrap {
+				baseCost += 30
+			}
 			baseCost *= 0.9
 		case .dash(direction: _, roomIDs: let roomIDs):
 			guard let lastID = roomIDs.last, let lastRoom = rooms[lastID] else { return 100 }
