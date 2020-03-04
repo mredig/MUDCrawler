@@ -17,6 +17,11 @@ public class MUDCrawler {
 		}
 	}
 
+	public func startSnitchMine() {
+		roomController.initPlayer()
+		roomController.snitchMining()
+	}
+
 	// MARK: - Game Loop
 	public func gameLoop() {
 		let command = promptPlayerInput()

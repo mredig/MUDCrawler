@@ -13,4 +13,8 @@ let crawler = MUDCrawler()
 
 //CoinMiner.benchMark()
 
-crawler.start()
+if CommandLine.arguments.contains("snitchmine") {
+	crawler.startSnitchMine()
+} else {
+	crawler.start()
+}
