@@ -74,7 +74,7 @@ enum MovementType: CustomDebugStringConvertible {
 			guard let lastID = roomIDs.last, let lastRoom = rooms[lastID] else { return 100 }
 			baseCost *= 2
 			baseCost += Double(roomIDs.count) * 0.5
-			for i in (1...roomIDs.count) {
+			for i in (1..<roomIDs.count) {
 				guard let previousRoom = rooms[roomIDs[i - 1]], let thisRoom = rooms[roomIDs[i]] else { continue }
 				if previousRoom.elevation > thisRoom.elevation {
 					baseCost -= 0.5
