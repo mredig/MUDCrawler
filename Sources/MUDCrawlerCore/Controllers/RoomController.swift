@@ -690,13 +690,13 @@ class RoomController {
 	func autoMine() {
 		while true {
 			do {
-				recall()
 				try go(to: 55, quietly: true)
 				guard let mineRoomID = examineWell() else { continue }
 				print("Heading to room \(mineRoomID) for mining")
 				try go(to: mineRoomID, quietly: true)
 				mine()
 				getBalance()
+				sellAllItems()
 			} catch {
 				print("There was an error automining: \(error)")
 			}
@@ -744,7 +744,6 @@ class RoomController {
 		waitForCommandQueue()
 	}
 
-
 	func snitchMining() {
 		guard currentRoom != nil else { return }
 		getPlayerStatus()
@@ -790,6 +789,22 @@ class RoomController {
 		}
 	}
 
+	func treasureHunt() {
+		guard currentRoom != nil else { return }
+		getPlayerStatus()
+
+		while true {
+			if (playerStatus?.gold ?? 0) > 2000 {
+				if sugarRushExpiration == nil {
+					buyDonut()
+				} else if let exp = sugarRushExpiration, Date() > exp {
+					buyDonut()
+				}
+			}
+			gatherTreasure()
+			sellAllItems()
+		}
+	}
 
 	// MARK: - Path calculation
 	/// Performs a breadth first search to get from start to destination

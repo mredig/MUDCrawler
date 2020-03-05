@@ -52,6 +52,9 @@ public class MUDCrawler {
 		else if command == "draw" {
 			roomController.drawMap()
 		}
+		else if command == "treasurehunt" {
+			roomController.treasureHunt()
+		}
 		else if command == "automine" {
 			roomController.autoMine()
 		}
