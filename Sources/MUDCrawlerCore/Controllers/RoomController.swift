@@ -25,6 +25,7 @@ class RoomController {
 	private(set) var rooms = [Int: RoomLog]()
 	private(set) var currentRoom: Int?
 	private let apiConnection = ApiConnection(token: apikey)
+	private(set) var snitchCount: Int?
 
 	let commandQueue = CommandQueue()
 
@@ -466,6 +467,28 @@ class RoomController {
 		return mineRoomID
 	}
 
+	func examineBoard() -> [String: Int] {
+		guard currentRoom != nil else { return [:] }
+		var snitchValues: [String: Int] = [:]
+		commandQueue.addCommand { dateCompletion in
+			self.apiConnection.examine(entity: "board") { result in
+				let cdTime: Date
+				switch result {
+				case .success(let examineResponse):
+					cdTime = self.dateFromCooldownValue(examineResponse.cooldown)
+					print(examineResponse.description)
+					snitchValues = self.getLeaderBoardInfo(from: examineResponse.description)
+				case .failure(let error):
+					print("Error examining well: \(error)")
+					cdTime = self.cooldownFromError(error)
+				}
+				dateCompletion(cdTime)
+			}
+		}
+		waitForCommandQueue()
+		return snitchValues
+	}
+
 	func getRoomID(from description: String) -> Int? {
 		let ls8 = LS8Cpu()
 		let data = DataConvert.binStringToData(description)
@@ -474,6 +497,26 @@ class RoomController {
 		let strNum = String(trail)
 
 		return Int(strNum)
+	}
+
+	func getLeaderBoardInfo(from description: String) -> [String: Int] {
+//		1. 5653 - mrpizza
+//		2. 270 - Krishan the Quail
+//		...
+
+		// split into lines
+		let lines = description.split(separator: "\n").map { String($0) }
+		// remove leading rank value
+		let removeRank = lines.map { $0.replacingOccurrences(of: ##"\d+\. "##, with: "", options: .regularExpression, range: nil) }
+		// split on spaces. results should be like [["323", "-", "name"], ...]
+		let splits = removeRank.map { $0.split(separator: " ").compactMap { String($0) } }
+
+		var leaderboard = [String: Int]()
+		for splitLine in splits {
+			guard let snitchCount = Int(splitLine[0]) else { continue }
+			leaderboard[splitLine[2]] = snitchCount
+		}
+		return leaderboard
 	}
 
 	func getPlayerStatus() {
@@ -635,6 +678,15 @@ class RoomController {
 		roomsWithItems.forEach { print("Room \($0.key) has \($0.value.items ?? [])") }
 	}
 
+	func getSnitchCount() {
+		getPlayerStatus()
+		try? go(to: 986, quietly: true)
+		let leaderboard = examineBoard()
+		if let playerName = playerStatus?.name, let myEntry = leaderboard[playerName] {
+			snitchCount = myEntry
+		}
+	}
+
 	// MARK: - Mining
 
 	private var lastProof: LastProof?
@@ -747,7 +799,8 @@ class RoomController {
 	func snitchMining() {
 		guard currentRoom != nil else { return }
 		getPlayerStatus()
-		while true {
+		getSnitchCount()
+		while (snitchCount ?? 0) < 9001 {
 			do {
 				if (playerStatus?.gold ?? 0) > 2000 {
 					if sugarRushExpiration == nil {
@@ -1009,6 +1062,13 @@ class RoomController {
 	private func updateMessages(_ messages: [String], forRoom roomID: Int) {
 		let newMessages = Set(messages)
 		rooms[roomID]?.messages.formUnion(newMessages)
+
+		newMessages.forEach {
+			if $0.contains("your hand closes around the snitch") {
+				snitchCount = snitchCount.map { $0 + 1 } // snitchCount += 1 (cuz optional)
+				print("\n\nsnitch count: \(snitchCount ?? 0)\n\n")
+			}
+		}
 	}
 
 	private func updateRoom(from info: RoomResponse, room: Int) {
