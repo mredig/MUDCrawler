@@ -204,3 +204,5 @@ Dependencies/
 Sources/MUDCrawlerCore/Controllers/ApiKey.swift
 
 .swiftpm/
+
+mine.log
