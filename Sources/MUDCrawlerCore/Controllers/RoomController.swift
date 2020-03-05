@@ -825,8 +825,10 @@ class RoomController {
 	private func buyDonutIfNeeded() {
 		if (playerStatus?.gold ?? 0) > 2000 {
 			if sugarRushExpiration == nil {
+				print("no sugar rush!")
 				buyDonut()
 			} else if let exp = sugarRushExpiration, Date() > exp {
+				print("sugar rush almost done!")
 				buyDonut()
 			}
 		}
