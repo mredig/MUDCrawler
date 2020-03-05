@@ -358,14 +358,13 @@ class RoomController {
 	}
 
 	func gatherTreasure() {
-
+		getPlayerStatus()
 		while (playerStatus?.capacity ?? 1) < 0.66 {
-			getPlayerStatus()
-
 			var roomNum = Int.random(in: 200...499)
 			roomNum = Int.random(in: 0..<10) == 0 ? 495 : roomNum
 			print("Wandering to \(roomNum)\n")
 			try? go(to: roomNum, quietly: true)
+			getPlayerStatus()
 		}
 	}
 
@@ -679,7 +678,9 @@ class RoomController {
 	}
 
 	func getSnitchCount() {
-		getPlayerStatus()
+		if playerStatus == nil {
+			getPlayerStatus()
+		}
 		try? go(to: 986, quietly: true)
 		let leaderboard = examineBoard()
 		if let playerName = playerStatus?.name, let myEntry = leaderboard[playerName] {
@@ -799,16 +800,11 @@ class RoomController {
 	func snitchMining() {
 		guard currentRoom != nil else { return }
 		getPlayerStatus()
+		buyDonutIfNeeded()
 		getSnitchCount()
 		while (snitchCount ?? 0) < 9001 {
 			do {
-				if (playerStatus?.gold ?? 0) > 2000 {
-					if sugarRushExpiration == nil {
-						buyDonut()
-					} else if let exp = sugarRushExpiration, Date() > exp {
-						buyDonut()
-					}
-				}
+				buyDonutIfNeeded()
 				if (playerStatus?.gold ?? 0) < 4500 { // 4500 is a good starting value
 					gatherTreasure()
 					sellAllItems()
@@ -821,7 +817,17 @@ class RoomController {
 				sellAllItems()
 				//				recall()
 			} catch {
-				print("There was an error autowarpmining: \(error)")
+				print("There was an error snitchmining: \(error)")
+			}
+		}
+	}
+
+	private func buyDonutIfNeeded() {
+		if (playerStatus?.gold ?? 0) > 2000 {
+			if sugarRushExpiration == nil {
+				buyDonut()
+			} else if let exp = sugarRushExpiration, Date() > exp {
+				buyDonut()
 			}
 		}
 	}
