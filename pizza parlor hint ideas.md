@@ -16,10 +16,32 @@ about how some rooms take longer to travel through than others. could you find a
 
 how many ways are there to move around?
 
+that some things might reveal secrets upon further inspection
 
 where do you end up when you warp?
 nothing. you just REALLY want a donut.
 how long it would take to gather 2000 gold. but what would you do with it?
-could it be? is it possible? 
+in the long run, can a donut pay for itself?
 
-and realize treasures will probably be where people aren't, and people tend to congregrate near.... but then you saw squirrel and was distracted.
+and realize treasures will probably be where people aren't, and people tend to congregrate near.... but then you saw a squirrel and was distracted.
+
+do snitches really get stitches? or maybe they get rewarded instead
+
+is a herring a bird? or is it a fish? does it matter if it's red?
+
+what if your soul was ripped through space and time into another dimension? If you moved around and yanked back to your original dimension, would you be close to where you started?
+
+
+
+
+
+
+
+
+--------
+
+other ideas
+timedust - once a player collects 10 it forms into a timepiece with a button. you press the button and the golden snitch stops spawning for 30 minutes (too elusive until you pray at the respective shrine)
+stardust - once you collect enough, a meteor shatters in the (underworld) sky, raining down a couple hundred golden snitches randomly over the map (too hot to touch until you pray at the shrine)
+blue snail shell piece - rare item - collect four and use it to curse the player currently in first place for 10 minutes, reducing their speed
+tiger wizard closet - allows you to teleport to a chosen room. consumed upon use.
