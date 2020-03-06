@@ -26,6 +26,9 @@ class RoomController {
 	private(set) var currentRoom: Int?
 	private let apiConnection = ApiConnection(token: apikey)
 	private(set) var snitchCount: Int?
+	private var missedLastSnitch = false
+	private var goalSnitchRoom: Int?
+	private var previousRoomID: Int? = 0
 
 	let commandQueue = CommandQueue()
 
@@ -466,6 +469,23 @@ class RoomController {
 		return mineRoomID
 	}
 
+	func examineWellIntelligently() -> Int? {
+		var mineRoomID: Int?
+		if missedLastSnitch {
+			let startValue = examineWell()
+			print("missed last snitch - waiting (\(startValue ?? 0))")
+			mineRoomID = startValue
+			let giveUpWaiting = Date(timeIntervalSinceNow: 15)
+			while mineRoomID == startValue && giveUpWaiting > Date() {
+				mineRoomID = examineWell()
+			}
+		} else {
+			print("got last snitch!")
+			mineRoomID = examineWell()
+		}
+		return mineRoomID
+	}
+
 	func examineBoard() -> [String: Int] {
 		guard currentRoom != nil else { return [:] }
 		var snitchValues: [String: Int] = [:]
@@ -802,7 +822,7 @@ class RoomController {
 		getPlayerStatus()
 		buyDonutIfNeeded()
 		getSnitchCount()
-		while (snitchCount ?? 0) < 7777 {
+		while (snitchCount ?? 0) < Int.max {
 			do {
 				buyDonutIfNeeded()
 				if (playerStatus?.gold ?? 0) < 4500 { // 4500 is a good starting value
@@ -811,7 +831,8 @@ class RoomController {
 					continue
 				}
 				try go(to: 555, quietly: true)
-				guard let mineRoomID = examineWell() else { continue }
+				guard let mineRoomID = examineWellIntelligently() else { continue }
+				goalSnitchRoom = mineRoomID
 				print("\nHeading to room \(mineRoomID) for snitching!\n")
 				try go(to: mineRoomID, quietly: true)
 				sellAllItems()
@@ -1039,7 +1060,7 @@ class RoomController {
 
 	// MARK: - logging
 	private func logRoomInfo(_ roomInfo: RoomResponse, movedInDirection direction: Direction?, dashed: Bool = false) {
-		let previousRoomID = currentRoom
+		previousRoomID = currentRoom
 		currentRoom = roomInfo.roomID
 
 		updateRoom(from: roomInfo, room: roomInfo.roomID)
@@ -1091,8 +1112,17 @@ class RoomController {
 			print("Room: \(room) players: \(info.players ?? [])")
 		}
 
+
 		if info.items?.contains("golden snitch") == true {
 			jumpTake(item: "golden snitch")
+		}
+
+		if info.roomID == goalSnitchRoom {
+			if info.messages.contains("A great warmth floods your body as your hand closes around the snitch before it vanishes.") {
+				missedLastSnitch = false
+			} else {
+				missedLastSnitch = true
+			}
 		}
 
 		let roomItems = info.items ?? []
