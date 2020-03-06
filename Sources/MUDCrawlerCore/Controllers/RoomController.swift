@@ -802,7 +802,7 @@ class RoomController {
 		getPlayerStatus()
 		buyDonutIfNeeded()
 		getSnitchCount()
-		while (snitchCount ?? 0) < 9001 {
+		while (snitchCount ?? 0) < 7777 {
 			do {
 				buyDonutIfNeeded()
 				if (playerStatus?.gold ?? 0) < 4500 { // 4500 is a good starting value
