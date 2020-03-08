@@ -31,7 +31,9 @@ is a herring a bird? or is it a fish? does it matter if it's red?
 
 what if your soul was ripped through space and time into another dimension? If you moved around and yanked back to your original dimension, would you be close to where you started?
 
+Pouring a cup of coffee on your face helps you to wake up more than by drinking it.
 
+The birth of Kool-aid man had to be traumatic.
 
 
 
@@ -45,3 +47,4 @@ timedust - once a player collects 10 it forms into a timepiece with a button. yo
 stardust - once you collect enough, a meteor shatters in the (underworld) sky, raining down a couple hundred golden snitches randomly over the map (too hot to touch until you pray at the shrine)
 blue snail shell piece - rare item - collect four and use it to curse the player currently in first place for 10 minutes, reducing their speed
 tiger wizard closet - allows you to teleport to a chosen room. consumed upon use.
+astral projection - be able to see into another room or see where a certain player is/snoopy information about them
