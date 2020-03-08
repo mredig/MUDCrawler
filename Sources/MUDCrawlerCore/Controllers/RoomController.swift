@@ -9,6 +9,7 @@ import Foundation
 import Files
 import NetworkHandler
 import LS8Core
+import CooldownCommandQueueCore
 
 class RoomController {
 	enum RoomControllerError: Error {
@@ -31,6 +32,9 @@ class RoomController {
 	private var previousRoomID: Int? = 0
 
 	let commandQueue = CommandQueue()
+	let cdCommandQueue = CooldownCommandQueue {
+		print("An error occurred. Try something else!")
+	}
 
 	var stopExploring = false
 
@@ -48,60 +52,60 @@ class RoomController {
 	// MARK: - API Directives
 	/// adds an init command to the queue and waits for the cooldown to finish
 	func initPlayer(completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
-		commandQueue.addCommand { dateCompletion in
+		let task = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.initPlayer { result in
-				let cdTime: Date
 				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					self.logRoomInfo(roomInfo, movedInDirection: nil)
-					print(roomInfo)
+				case .success(let roomResponse):
+					self.logRoomInfo(roomResponse, movedInDirection: nil)
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
 					print("Error initing player: \(error)")
-					cdTime = self.cooldownFromError(error)
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(task)
+		waitForCooldownQueue()
 	}
 
 	func warp() {
-		commandQueue.addCommand { dateCompletion in
+		let warpTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.warp { result in
-				let cdTime: Date
 				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					self.logRoomInfo(roomInfo, movedInDirection: nil)
-					print(roomInfo)
+				case .success(let roomResponse):
+					self.logRoomInfo(roomResponse, movedInDirection: nil)
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
-					print("Error initing player: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error warping player: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(warpTask)
+		waitForCooldownQueue()
 	}
 
 	func recall() {
-		commandQueue.addCommand { dateCompletion in
+		let recallTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.recall { result in
-				let cdTime: Date
 				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					self.logRoomInfo(roomInfo, movedInDirection: nil)
-					print(roomInfo)
+				case .success(let roomResponse):
+					self.logRoomInfo(roomResponse, movedInDirection: nil)
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
-					print("Error initing player: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error recalling player: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(recallTask)
+		waitForCooldownQueue()
 	}
 
 	/// adds a move command to the queue and waits for the cooldown to finish
@@ -115,24 +119,22 @@ class RoomController {
 			nextRoomID = nil
 		}
 
-		commandQueue.addCommand { dateCompletion in
+		let moveTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.movePlayer(direction: direction, predictedRoom: nextRoomID) { result in
-				let cdTime: Date
 				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					self.logRoomInfo(roomInfo, movedInDirection: direction)
-					print(roomInfo)
+				case .success(let roomResponse):
+					self.logRoomInfo(roomResponse, movedInDirection: direction)
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
 					print("Error moving rooms: \(error)")
-					cdTime = self.cooldownFromError(error)
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
-				completion?(result)
 			}
 		}
-
-		waitForCommandQueue()
+		cdCommandQueue.addTask(moveTask)
+		waitForCooldownQueue()
 	}
 
 	func fly(in direction: Direction, completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
@@ -1232,12 +1234,30 @@ class RoomController {
 		}
 	}
 
+	private func waitForCooldownQueue() {
+		var printedNotice = false
+		var lastTimeNotice = Date(timeIntervalSinceNow: -1)
+		while cdCommandQueue.currentlyExecuting {
+			if !printedNotice {
+				print("waiting for command queue to finish...", terminator: "")
+				printedNotice = true
+			}
+			if lastTimeNotice.addingTimeInterval(0.25) < Date() {
+				lastTimeNotice = Date()
+				let cdRemaining = cdCommandQueue.cooldownRemaining
+				let cdRemainingStr = String(format: "%.02f", cdRemaining)
+				print(cdRemainingStr, terminator: cdRemaining > 0 ? " " : "\n")
+			}
+			usleep(10000)
+		}
+	}
+
 	private func dateFromCooldownValue(_ cooldown: TimeInterval) -> Date {
 		Date(timeIntervalSinceNow: cooldown + 0.01)
 	}
 
-	private func cooldownFromError(_ error: Error) -> Date {
-		guard let error = error as? NetworkError else { return Date() }
+	private func cooldownDurationFromError(_ error: Error) -> TimeInterval {
+		guard let error = error as? NetworkError else { return 0 }
 
 		let returnedData: Data?
 		switch error {
@@ -1248,11 +1268,15 @@ class RoomController {
 		case .httpNon200StatusCode(code: _, data: let data):
 			returnedData = data
 		default:
-			return Date()
+			return 0
 		}
 
-		guard let data = returnedData, let genericResponse = try? JSONDecoder().decode(BasicResponse.self, from: data) else { return Date() }
-		return dateFromCooldownValue(genericResponse.cooldown)
+		guard let data = returnedData, let genericResponse = try? JSONDecoder().decode(BasicResponse.self, from: data) else { return 0 }
+		return genericResponse.cooldown
+	}
+
+	private func cooldownFromError(_ error: Error) -> Date {
+		return dateFromCooldownValue(cooldownDurationFromError(error))
 	}
 
 	// MARK: - Persistence
