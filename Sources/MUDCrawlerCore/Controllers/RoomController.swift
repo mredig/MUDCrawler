@@ -658,23 +658,23 @@ class RoomController {
 	private var lastProofTime: Date?
 	func getLastProof() {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+		let proofTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.getLastProof { result in
-				let cdTime: Date
 				switch result {
 				case .success(let lastProof):
-					cdTime = self.dateFromCooldownValue(lastProof.cooldown)
 					self.lastProof = lastProof
 					self.lastProofTime = Date()
 					print(lastProof)
+					cooldownCompletion(lastProof.cooldown, true)
 				case .failure(let error):
-					print("Error getting proof: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error getting last proof: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(proofTask)
+		waitForCooldownQueue()
 	}
 
 	func mine() {
@@ -733,43 +733,44 @@ class RoomController {
 
 	private func submitProof(proof: Int) -> Bool {
 		var success = false
-		commandQueue.addCommand { dateCompletion in
+		let submitTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.submitProof(proof: proof) { result in
-				let cdTime: Date
 				switch result {
 				case .success(let submissionResult):
-					cdTime = self.dateFromCooldownValue(submissionResult.cooldown)
 					print(submissionResult)
 					success = true
+					cooldownCompletion(submissionResult.cooldown, true)
 				case .failure(let error):
 					print("Error submitting proof: \(error)")
-					cdTime = self.cooldownFromError(error)
+					let cooldown = self.cooldownDurationFromError(error)
 					success = false
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(submitTask)
+		waitForCooldownQueue()
 		return success
 	}
 
 	func getBalance() {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+
+		let balanceTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.getBalance { result in
-				let cdTime: Date
 				switch result {
 				case .success(let balanceInfo):
-					cdTime = self.dateFromCooldownValue(balanceInfo.cooldown)
 					print(balanceInfo)
+					cooldownCompletion(balanceInfo.cooldown, true)
 				case .failure(let error):
-					print("Error getting balance: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error submitting proof: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(balanceTask)
+		waitForCooldownQueue()
 	}
 
 	func snitchMining() {
