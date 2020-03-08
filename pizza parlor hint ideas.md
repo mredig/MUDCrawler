@@ -48,3 +48,4 @@ stardust - once you collect enough, a meteor shatters in the (underworld) sky, r
 blue snail shell piece - rare item - collect four and use it to curse the player currently in first place for 10 minutes, reducing their speed
 tiger wizard closet - allows you to teleport to a chosen room. consumed upon use.
 astral projection - be able to see into another room or see where a certain player is/snoopy information about them
+warp and recall should benefit from nextRoomID
