@@ -503,135 +503,136 @@ class RoomController {
 
 	func equip(item: String) {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+		let equipTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.equip(item: item) { result in
-				let cdTime: Date
 				switch result {
 				case .success(let playerInfo):
-					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
 					print(playerInfo)
+					cooldownCompletion(playerInfo.cooldown, true)
 				case .failure(let error):
-					print("Error equipping item: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error equipping item: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(equipTask)
+		waitForCooldownQueue()
 	}
 
 	func unequip(item: String) {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+		let unequipTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.unequip(item: item) { result in
-				let cdTime: Date
 				switch result {
 				case .success(let playerInfo):
-					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
 					print(playerInfo)
+					cooldownCompletion(playerInfo.cooldown, true)
 				case .failure(let error):
-					print("Error unequipping item: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error unequipping item: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(unequipTask)
+		waitForCooldownQueue()
 	}
 
 	func changeName(to name: String, confirm: Bool) {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+		let nameTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.changeName(newName: name, confirm: confirm) { result in
-				let cdTime: Date
 				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					print(roomInfo)
+				case .success(let roomResponse):
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
 					print("Error changing name: \(error)")
-					cdTime = self.cooldownFromError(error)
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(nameTask)
+		waitForCooldownQueue()
 	}
 
 	func pray() {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+		let prayTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.pray { result in
-				let cdTime: Date
 				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					print(roomInfo)
+				case .success(let roomResponse):
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
 					print("Error praying: \(error)")
-					cdTime = self.cooldownFromError(error)
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(prayTask)
+		waitForCooldownQueue()
 	}
 
 	func ghostCarry(item: String) {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+		let prayTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.ghostCarry(item: item) { result in
-				let cdTime: Date
 				switch result {
-				case .success(let playerResponse):
-					cdTime = self.dateFromCooldownValue(playerResponse.cooldown)
-					print(playerResponse)
+				case .success(let roomResponse):
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
-					print("Error ghosting item: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error ghosting item: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(prayTask)
+		waitForCooldownQueue()
 	}
 
 	func ghostReceive(item: String) {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+		let nameTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.ghostReceive(item: item) { result in
-				let cdTime: Date
 				switch result {
-				case .success(let playerResponse):
-					cdTime = self.dateFromCooldownValue(playerResponse.cooldown)
-					print(playerResponse)
+				case .success(let roomResponse):
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
-					print("Error unghosting item: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error ghosting item back: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(nameTask)
+		waitForCooldownQueue()
 	}
 
 	func transmog(item: String) {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+
+		let tmogTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.transmog(item: item) { result in
-				let cdTime: Date
 				switch result {
-				case .success(let playerResponse):
-					cdTime = self.dateFromCooldownValue(playerResponse.cooldown)
-					print(playerResponse)
+				case .success(let roomResponse):
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
 					print("Error transmogging item: \(error)")
-					cdTime = self.cooldownFromError(error)
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(tmogTask)
+		waitForCooldownQueue()
 	}
 
 	func foundItems() {
