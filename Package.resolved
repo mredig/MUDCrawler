@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "CooldownCommandQueue",
+        "repositoryURL": "https://github.com/mredig/CooldownCommandQueue.git",
+        "state": {
+          "branch": null,
+          "revision": "d1b4ed85f70ab9e8ce3934e5b90b9686a25601e9",
+          "version": "0.1.3"
+        }
+      },
+      {
         "package": "CryptoSwift",
         "repositoryURL": "https://github.com/krzyzanowskim/CryptoSwift.git",
         "state": {

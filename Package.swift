@@ -20,7 +20,8 @@ let package = Package(
 		.package(url: "https://github.com/johnsundell/files.git", from: "4.0.0"),
 		.package(url: "https://github.com/mredig/NetworkHandler.git", from: "0.9.7"),
 		.package(url: "https://github.com/mredig/LS8Swift.git", from: "0.0.1"),
-		.package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.0.0")
+		.package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.0.0"),
+		.package(url: "https://github.com/mredig/CooldownCommandQueue.git", from: "0.1.0")
 
 	],
 	targets: [
@@ -31,7 +32,8 @@ let package = Package(
 					"Files",
 					"NetworkHandler",
 					"LS8Core",
-					"CryptoSwift"
+					"CryptoSwift",
+					"CooldownCommandQueueCore"
 		]),
 		.target(
 			name: "MUDCrawler",
