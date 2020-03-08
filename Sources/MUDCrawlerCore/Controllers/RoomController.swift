@@ -147,24 +147,22 @@ class RoomController {
 			nextRoomID = nil
 		}
 
-		commandQueue.addCommand { dateCompletion in
+		let flyTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.fly(direction: direction, predictedRoom: nextRoomID) { result in
-				let cdTime: Date
 				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					self.logRoomInfo(roomInfo, movedInDirection: direction)
-					print(roomInfo)
+				case .success(let roomResponse):
+					self.logRoomInfo(roomResponse, movedInDirection: direction)
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
-					print("Error moving rooms: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error flying player: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
-				completion?(result)
 			}
 		}
-
-		waitForCommandQueue()
+		cdCommandQueue.addTask(flyTask)
+		waitForCooldownQueue()
 	}
 
 	func go(to roomID: Int, quietly: Bool) throws {
