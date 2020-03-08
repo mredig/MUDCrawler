@@ -268,74 +268,66 @@ class RoomController {
 
 	func drop(item: String) {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+
+		let dropTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.dropItem(item) { result in
-				let cdTime: Date
 				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					self.logRoomInfo(roomInfo, movedInDirection: nil)
-					print(roomInfo)
+				case .success(let roomResponse):
+					self.logRoomInfo(roomResponse, movedInDirection: nil)
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
-					print("Error dropping item: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error moving rooms: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(dropTask)
+		waitForCooldownQueue()
 	}
 
 	func buyDonut() {
 		guard currentRoom != nil else { return }
 		try? go(to: 15, quietly: true)
-		commandQueue.addCommand { dateCompletion in
+
+		let donutTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.buyDonut { result in
-				let cdTime: Date
 				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					self.logRoomInfo(roomInfo, movedInDirection: nil)
-					print(roomInfo)
+				case .success(let roomResponse):
+					self.logRoomInfo(roomResponse, movedInDirection: nil)
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
-					print("Error selling item: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error moving rooms: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
-	}
-
-	func gatherTreasure() {
-		getPlayerStatus()
-		while (playerStatus?.capacity ?? 1) < 0.66 {
-			var roomNum = Int.random(in: 200...499)
-			roomNum = Int.random(in: 0..<10) == 0 ? 495 : roomNum
-			print("Wandering to \(roomNum)\n")
-			try? go(to: roomNum, quietly: true)
-			getPlayerStatus()
-		}
+		cdCommandQueue.addTask(donutTask)
+		waitForCooldownQueue()
 	}
 
 	func sell(item: String, confirm: Bool) {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+
+		let sellTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.sellItem(item, confirm: confirm) { result in
-				let cdTime: Date
 				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					self.logRoomInfo(roomInfo, movedInDirection: nil)
-					print(roomInfo)
+				case .success(let roomResponse):
+					self.logRoomInfo(roomResponse, movedInDirection: nil)
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
-					print("Error selling item: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error moving rooms: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(sellTask)
+		waitForCooldownQueue()
 	}
 
 	func sellAllItems() {
@@ -345,23 +337,24 @@ class RoomController {
 		guard items.count > 0 else { return }
 		try? go(to: 1, quietly: true)
 		for item in items {
-			commandQueue.addCommand { dateCompletion in
+
+			let sellTask = CooldownCommandOperation { cooldownCompletion in
 				self.apiConnection.sellItem(item, confirm: true) { result in
-					let cdTime: Date
 					switch result {
-					case .success(let roomInfo):
-						cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-						self.logRoomInfo(roomInfo, movedInDirection: nil)
-						print(roomInfo)
+					case .success(let roomResponse):
+						self.logRoomInfo(roomResponse, movedInDirection: nil)
+						print(roomResponse)
+						cooldownCompletion(roomResponse.cooldown, true)
 					case .failure(let error):
-						print("Error selling item: \(error)")
-						cdTime = self.cooldownFromError(error)
+						print("Error moving rooms: \(error)")
+						let cooldown = self.cooldownDurationFromError(error)
+						cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 					}
-					dateCompletion(cdTime)
 				}
 			}
+			cdCommandQueue.addTask(sellTask)
 		}
-		waitForCommandQueue()
+		waitForCooldownQueue()
 		getPlayerStatus()
 	}
 
@@ -487,22 +480,22 @@ class RoomController {
 
 	func getPlayerStatus() {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
+		let statusTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.playerStatus { result in
-				let cdTime: Date
 				switch result {
 				case .success(let playerInfo):
-					cdTime = self.dateFromCooldownValue(playerInfo.cooldown)
 					self.playerStatus = playerInfo
 					print(playerInfo)
+					cooldownCompletion(playerInfo.cooldown, true)
 				case .failure(let error):
-					print("Error updating status: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error moving rooms: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(statusTask)
+		waitForCooldownQueue()
 	}
 
 	func equip(item: String) {
@@ -704,6 +697,17 @@ class RoomController {
 				let success = submitProof(proof: foundProof)
 				proof = success ? proof : nil
 			}
+		}
+	}
+
+	func gatherTreasure() {
+		getPlayerStatus()
+		while (playerStatus?.capacity ?? 1) < 0.66 {
+			var roomNum = Int.random(in: 200...499)
+			roomNum = Int.random(in: 0..<10) == 0 ? 495 : roomNum
+			print("Wandering to \(roomNum)\n")
+			try? go(to: roomNum, quietly: true)
+			getPlayerStatus()
 		}
 	}
 
