@@ -171,152 +171,99 @@ class RoomController {
 
 		let movements = try shortestRoutes(from: currentRoom, to: roomID)
 
+		let responseHandler = { [weak self] (result: Result<RoomResponse, NetworkError>, cooldownCompletion: CooldownCommandOperation.CooldownCompletion, direction: Direction?, dashed: Bool) -> Void in
+			guard let self = self else { return }
+			switch result {
+			case .success(let roomResponse):
+				self.logRoomInfo(roomResponse, movedInDirection: direction, dashed: dashed)
+				if quietly {
+					print("Entered room \(roomResponse.roomID)")
+				} else {
+					print(roomResponse)
+				}
+				cooldownCompletion(roomResponse.cooldown, true)
+			case .failure(let error):
+				print("Error during `go` function: \(error)")
+				let cooldown = self.cooldownDurationFromError(error)
+				cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
+			}
+		}
+
 		for step in movements {
 			switch step {
 			case .dash(direction: let direction, roomIDs: let roomIDs):
-				commandQueue.addCommand { dateCompletion in
+				let dashTask = CooldownCommandOperation { cooldownCompletion in
 					self.apiConnection.dashPlayer(direction: direction, predictedRooms: roomIDs) { result in
-						let cdTime: Date
-						switch result {
-						case .success(let roomInfo):
-							if quietly {
-								print("Entered room \(roomInfo.roomID)")
-							} else {
-								print(roomInfo)
-							}
-							self.logRoomInfo(roomInfo, movedInDirection: direction, dashed: true)
-							cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-						case .failure(let error):
-							print("Error moving player: \(error)")
-							cdTime = self.cooldownFromError(error)
-						}
-						dateCompletion(cdTime)
+						responseHandler(result, cooldownCompletion, direction, true)
 					}
 				}
+				cdCommandQueue.addTask(dashTask)
 			case .fly(direction: let direction, roomID: let roomID):
-				commandQueue.addCommand { dateCompletion in
+				let flyTask = CooldownCommandOperation { cooldownCompletion in
 					self.apiConnection.fly(direction: direction, predictedRoom: "\(roomID)") { result in
-						let cdTime: Date
-						switch result {
-						case .success(let roomInfo):
-							if quietly {
-								print("Entered room \(roomInfo.roomID)")
-							} else {
-								print(roomInfo)
-							}
-							self.logRoomInfo(roomInfo, movedInDirection: direction)
-							cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-						case .failure(let error):
-							print("Error moving player: \(error)")
-							cdTime = self.cooldownFromError(error)
-						}
-						dateCompletion(cdTime)
+						responseHandler(result, cooldownCompletion, direction, false)
 					}
 				}
+				cdCommandQueue.addTask(flyTask)
 			case .move(direction: let direction, roomID: let roomID):
-				commandQueue.addCommand { dateCompletion in
+				let moveTask = CooldownCommandOperation { cooldownCompletion in
 					self.apiConnection.movePlayer(direction: direction, predictedRoom: "\(roomID)") { result in
-						let cdTime: Date
-						switch result {
-						case .success(let roomInfo):
-							if quietly {
-								print("Entered room \(roomInfo.roomID)")
-							} else {
-								print(roomInfo)
-							}
-							self.logRoomInfo(roomInfo, movedInDirection: direction)
-							cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-						case .failure(let error):
-							print("Error moving player: \(error)")
-							cdTime = self.cooldownFromError(error)
-						}
-						dateCompletion(cdTime)
+						responseHandler(result, cooldownCompletion, direction, false)
 					}
 				}
+				cdCommandQueue.addTask(moveTask)
+
 			case .warp(direction: _, roomID: _):
-				commandQueue.addCommand { dateCompletion in
+				let warpTask = CooldownCommandOperation { cooldownCompletion in
 					self.apiConnection.warp { result in
-						let cdTime: Date
-						switch result {
-						case .success(let roomInfo):
-							cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-							if quietly {
-								print("Entered room \(roomInfo.roomID)")
-							} else {
-								print(roomInfo)
-							}
-							self.logRoomInfo(roomInfo, movedInDirection: nil)
-						case .failure(let error):
-							print("Error initing player: \(error)")
-							cdTime = self.cooldownFromError(error)
-						}
-						dateCompletion(cdTime)
+						responseHandler(result, cooldownCompletion, nil, false)
 					}
 				}
+				cdCommandQueue.addTask(warpTask)
 			case .recall:
-				commandQueue.addCommand { dateCompletion in
+				let recallTask = CooldownCommandOperation { cooldownCompletion in
 					self.apiConnection.recall { result in
-						let cdTime: Date
-						switch result {
-						case .success(let roomInfo):
-							cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-							if quietly {
-								print("Entered room \(roomInfo.roomID)")
-							} else {
-								print(roomInfo)
-							}
-							self.logRoomInfo(roomInfo, movedInDirection: nil)
-						case .failure(let error):
-							print("Error initing player: \(error)")
-							cdTime = self.cooldownFromError(error)
-						}
-						dateCompletion(cdTime)
+						responseHandler(result, cooldownCompletion, nil, false)
 					}
 				}
+				cdCommandQueue.addTask(recallTask)
 			}
 			print("Added \(step) to queue.")
 		}
-		waitForCommandQueue()
+		waitForCooldownQueue()
+	}
+
+	private func createTakeTask(item: String) -> CooldownCommandOperation {
+		let takeTask = CooldownCommandOperation { cooldownCompletion in
+			self.apiConnection.takeItem(item) { result in
+				switch result {
+				case .success(let roomResponse):
+					self.logRoomInfo(roomResponse, movedInDirection: nil)
+					print(roomResponse)
+					cooldownCompletion(roomResponse.cooldown, true)
+				case .failure(let error):
+					print("Error jump taking item: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
+
+				}
+			}
+		}
+		return takeTask
 	}
 
 	func take(item: String) {
 		guard currentRoom != nil else { return }
-		commandQueue.addCommand { dateCompletion in
-			self.apiConnection.takeItem(item) { result in
-				let cdTime: Date
-				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					self.logRoomInfo(roomInfo, movedInDirection: nil)
-					print(roomInfo)
-				case .failure(let error):
-					print("Error taking item: \(error)")
-					cdTime = self.cooldownFromError(error)
-				}
-				dateCompletion(cdTime)
-			}
-		}
-		waitForCommandQueue()
+		let takeTask = createTakeTask(item: item)
+		cdCommandQueue.jumpTask(takeTask)
+		waitForCooldownQueue()
 	}
 
 	/// adds an item take to the front of the queue, but doesn't wait for it to complete
 	func jumpTake(item: String) {
 		guard currentRoom != nil else { return }
-		commandQueue.jumpQueue { dateCompletion in
-			self.apiConnection.takeItem(item) { result in
-				let cdTime: Date
-				switch result {
-				case .success(let roomInfo):
-					cdTime = self.dateFromCooldownValue(roomInfo.cooldown)
-					self.logRoomInfo(roomInfo, movedInDirection: nil)
-					print(roomInfo)
-				case .failure(let error):
-					print("Error taking item: \(error)")
-					cdTime = self.cooldownFromError(error)
-				}
-				dateCompletion(cdTime)
-			}
-		}
+		let takeTask = createTakeTask(item: item)
+		cdCommandQueue.jumpTask(takeTask)
 	}
 
 	func drop(item: String) {
