@@ -365,47 +365,49 @@ class RoomController {
 			guard let newRoomID = examineWell() else { return }
 			print("Mine in room \(newRoomID)")
 		} else {
-			commandQueue.addCommand { dateCompletion in
+			let examineTask = CooldownCommandOperation { cooldownCompletion in
 				self.apiConnection.examine(entity: entity) { result in
-					let cdTime: Date
 					switch result {
 					case .success(let examineResponse):
-						cdTime = self.dateFromCooldownValue(examineResponse.cooldown)
-						print(examineResponse)
+						print(examineResponse.description)
 						if entity == "well", let id = self.getRoomID(from: examineResponse.description) {
 							print("Mine in room \(id)")
 						}
+						cooldownCompletion(examineResponse.cooldown, true)
 					case .failure(let error):
-						print("Error examining item: \(error)")
-						cdTime = self.cooldownFromError(error)
+						print("Error examining item: \(error)")
+						let cooldown = self.cooldownDurationFromError(error)
+						cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 					}
-					dateCompletion(cdTime)
 				}
 			}
-			waitForCommandQueue()
+			cdCommandQueue.addTask(examineTask)
+			waitForCooldownQueue()
 		}
 	}
 
 	func examineWell() -> Int? {
 		guard currentRoom != nil else { return nil }
 		var mineRoomID: Int?
-		commandQueue.addCommand { dateCompletion in
+
+		let examineTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.examine(entity: "well") { result in
-				let cdTime: Date
 				switch result {
 				case .success(let examineResponse):
-					cdTime = self.dateFromCooldownValue(examineResponse.cooldown)
+					print(examineResponse.description)
+					cooldownCompletion(examineResponse.cooldown, true)
 					if let id = self.getRoomID(from: examineResponse.description) {
 						mineRoomID = id
 					}
 				case .failure(let error):
-					print("Error examining well: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error examining item: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(examineTask)
+		waitForCooldownQueue()
 		return mineRoomID
 	}
 
@@ -429,22 +431,23 @@ class RoomController {
 	func examineBoard() -> [String: Int] {
 		guard currentRoom != nil else { return [:] }
 		var snitchValues: [String: Int] = [:]
-		commandQueue.addCommand { dateCompletion in
+
+		let examineTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.examine(entity: "board") { result in
-				let cdTime: Date
 				switch result {
 				case .success(let examineResponse):
-					cdTime = self.dateFromCooldownValue(examineResponse.cooldown)
 					print(examineResponse.description)
 					snitchValues = self.getLeaderBoardInfo(from: examineResponse.description)
+					cooldownCompletion(examineResponse.cooldown, true)
 				case .failure(let error):
-					print("Error examining well: \(error)")
-					cdTime = self.cooldownFromError(error)
+					print("Error examining item: \(error)")
+					let cooldown = self.cooldownDurationFromError(error)
+					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
-				dateCompletion(cdTime)
 			}
 		}
-		waitForCommandQueue()
+		cdCommandQueue.addTask(examineTask)
+		waitForCooldownQueue()
 		return snitchValues
 	}
 
