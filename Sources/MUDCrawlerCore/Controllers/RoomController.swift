@@ -481,7 +481,7 @@ class RoomController {
 		return leaderboard
 	}
 
-	func getPlayerStatus() {
+	func getPlayerStatus(wait: Bool = true) {
 		guard currentRoom != nil else { return }
 		let statusTask = CooldownCommandOperation { cooldownCompletion in
 			self.apiConnection.playerStatus { result in
@@ -497,8 +497,12 @@ class RoomController {
 				}
 			}
 		}
-		cdCommandQueue.addTask(statusTask)
-		waitForCooldownQueue()
+		if wait {
+			cdCommandQueue.addTask(statusTask)
+			waitForCooldownQueue()
+		} else {
+			cdCommandQueue.jumpTask(statusTask)
+		}
 	}
 
 	func equip(item: String) {
@@ -1081,8 +1085,13 @@ class RoomController {
 			}
 		}
 
+		if playerStatus == nil || info.errors.contains("Item too heavy: +5s CD") {
+			getPlayerStatus(wait: false)
+			return
+		}
+
 		let roomItems = info.items ?? []
-		if info.roomID < 500 && roomItems.count > 0 {
+		if info.roomID < 500 && roomItems.count > 0 && (playerStatus?.encumbrance ?? 0) <= (playerStatus?.strength ?? 0) {
 			jumpTake(item: roomItems.first!)
 		}
 	}
