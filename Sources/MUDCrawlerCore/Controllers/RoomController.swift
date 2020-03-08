@@ -277,7 +277,7 @@ class RoomController {
 					print(roomResponse)
 					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
-					print("Error moving rooms: \(error)")
+					print("Error dropping item: \(error)")
 					let cooldown = self.cooldownDurationFromError(error)
 					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
@@ -299,7 +299,7 @@ class RoomController {
 					print(roomResponse)
 					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
-					print("Error moving rooms: \(error)")
+					print("Error buying donut: \(error)")
 					let cooldown = self.cooldownDurationFromError(error)
 					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
@@ -320,7 +320,7 @@ class RoomController {
 					print(roomResponse)
 					cooldownCompletion(roomResponse.cooldown, true)
 				case .failure(let error):
-					print("Error moving rooms: \(error)")
+					print("Error selling item: \(error)")
 					let cooldown = self.cooldownDurationFromError(error)
 					cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 				}
@@ -346,7 +346,7 @@ class RoomController {
 						print(roomResponse)
 						cooldownCompletion(roomResponse.cooldown, true)
 					case .failure(let error):
-						print("Error moving rooms: \(error)")
+						print("Error selling items: \(error)")
 						let cooldown = self.cooldownDurationFromError(error)
 						cooldownCompletion(self.cooldownDurationFromError(error), cooldown > 0)
 					}
