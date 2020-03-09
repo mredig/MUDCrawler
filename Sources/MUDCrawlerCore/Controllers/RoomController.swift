@@ -49,9 +49,10 @@ class RoomController {
 
 	// MARK: - API Directives
 	/// adds an init command to the queue and waits for the cooldown to finish
-	func initPlayer(completion: ((Result<RoomResponse, NetworkError>) -> Void)? = nil) {
-		let task = CooldownCommandOperation { cooldownCompletion in
-			self.apiConnection.initPlayer { result in
+	func initPlayer() {
+		let task = CooldownCommandOperation { [weak self] cooldownCompletion in
+			self?.apiConnection.initPlayer { result in
+				guard let self = self else { return }
 				switch result {
 				case .success(let roomResponse):
 					self.logRoomInfo(roomResponse, movedInDirection: nil)
@@ -145,8 +146,9 @@ class RoomController {
 			nextRoomID = nil
 		}
 
-		let flyTask = CooldownCommandOperation { cooldownCompletion in
-			self.apiConnection.fly(direction: direction, predictedRoom: nextRoomID) { result in
+		let flyTask = CooldownCommandOperation { [weak self] cooldownCompletion in
+			self?.apiConnection.fly(direction: direction, predictedRoom: nextRoomID) { result in
+				guard let self = self else { return }
 				switch result {
 				case .success(let roomResponse):
 					self.logRoomInfo(roomResponse, movedInDirection: direction)
